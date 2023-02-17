@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 [System.Serializable]
 public class WordList : MonoBehaviour
@@ -20,19 +21,10 @@ public class WordList : MonoBehaviour
     {
         title=_title;
         listNum=_listNum;
+        foundingTime=DateTime.Now.ToShortDateString();
     }
 
+    
 
-
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
+   
 }

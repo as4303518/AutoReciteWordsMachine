@@ -5,12 +5,14 @@ using UnityEngine.UI;
 
 public class ListCard : MonoBehaviour
 {
+    //list實體化腳本
     //開啟與關閉坐在title上，進入單字選單做在打開後的物件上
     public bool expand = false;
 
     public GameObject expandObject;
 
     public Button title;
+    public Button exam;
 
     public Text titleText;
     public int listNum;
@@ -19,8 +21,6 @@ public class ListCard : MonoBehaviour
     {
         titleText.text = _list.title;
         listNum=_list.listNum;
-
-
     }
 
     public void ClickTitleButton()
@@ -37,7 +37,6 @@ public class ListCard : MonoBehaviour
 
     private void OpenList()
     {
-
         transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 400);
         expandObject.SetActive(true);
         expand = true;
@@ -47,7 +46,6 @@ public class ListCard : MonoBehaviour
 
     private void CLoseList()
     {
-
         transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 100);
         expandObject.SetActive(false);
         expand = false;
@@ -56,15 +54,4 @@ public class ListCard : MonoBehaviour
     }
 
 
-    // Start is called before the first frame update
-    void Start()
-    {
-
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
 }
