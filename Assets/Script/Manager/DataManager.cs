@@ -11,7 +11,7 @@ public class DataManager : InstanceScript<DataManager>
 
     void Awake()
     {
-        DontDestoryThisGame();
+        DontDestoryThis();
     }
 
     void Start()
@@ -47,7 +47,7 @@ public class SaveData
     [SerializeField] private int ListCount = 0;
 
     private int LearnWordCount=0;
-    
+
 
     //[SerializeField]private List<WordList> myList=new List<WordList>();
 

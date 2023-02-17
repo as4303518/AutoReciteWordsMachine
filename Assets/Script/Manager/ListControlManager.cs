@@ -9,6 +9,8 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
     public GameObject ViewPanel;
 
+
+
     public GameObject ListObject;
 
 
@@ -18,7 +20,7 @@ public class ListControlManager : InstanceScript<ListControlManager>
         MonoScript();
 
     }
-    
+
     // public void Init()
     // {
     //     MonoScript();

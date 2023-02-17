@@ -9,22 +9,30 @@ public class WordList : MonoBehaviour
     //單字列表裡的管理員，負責顯示這個列表所有的單字數據
     public string title;
 
-    private string foundingTime;
-    private string lastOpenTime;
+    public string foundingTime { get; private set; }
+    public string lastOpenTime { get; private set; }
 
-    private int wordsCount=0;
+
 
     public int listNum { get; private set; }
     public List<Word> words = new List<Word>();
 
     public WordList(string _title, int _listNum)
     {
-        title=_title;
-        listNum=_listNum;
-        foundingTime=DateTime.Now.ToShortDateString();
+        title = _title;
+        listNum = _listNum;
+        foundingTime = DateTime.Now.ToShortDateString();
     }
 
-    
+    public void SetLastTime(string _lastTime)
+    {
+        lastOpenTime = _lastTime;
 
-   
+    }
+    public int WordsCountOfList()
+    {
+        return words.Count;
+    }
+
+
 }

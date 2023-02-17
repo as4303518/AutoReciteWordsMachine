@@ -8,7 +8,7 @@ public class GameManager : InstanceScript<GameManager>
     public string CurScene=null;
     void Awake()
     {
-        DontDestoryThisGame();
+        DontDestoryThis();
     }
 
 

@@ -30,7 +30,7 @@ public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour,
 
     }
 
-    public void DontDestoryThisGame()
+    public void DontDestoryThis()
     {
         MonoScript();
         DontDestroyOnLoad(Instance);

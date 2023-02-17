@@ -11,6 +11,10 @@ public class ListCard : MonoBehaviour
 
     public GameObject expandObject;
 
+    public Text WordsCounts;
+    public Text FoundingTime;
+    public Text LastOpenTime;
+
     public Button title;
     public Button exam;
 
@@ -20,7 +24,10 @@ public class ListCard : MonoBehaviour
     public void Init(WordList _list)
     {
         titleText.text = _list.title;
-        listNum=_list.listNum;
+        listNum = _list.listNum;
+        WordsCounts.text="單字總量:"+(_list.WordsCountOfList()>0?_list.WordsCountOfList():0);
+        FoundingTime.text="創立時間:"+_list.foundingTime;
+        LastOpenTime.text="最後進入:"+_list.lastOpenTime;
     }
 
     public void ClickTitleButton()
