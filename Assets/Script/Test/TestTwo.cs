@@ -7,17 +7,20 @@ public class TestTwo : MonoBehaviour
 {
     // Start is called before the first frame update
 
-    public UnityAction bb;
 
-    public void Init(ref UnityAction _aa)
+
+    public IEnumerator Init( UnityAction<string> _aa)
     {
-        bb = _aa;
-        bb+=Btest;
+    
+        yield return new WaitForSeconds(3);
+        _aa("回傳參數給你成功");
 
     }
 
-    private void Btest(){
-
-        Debug.Log("我是腳本b的btest");
+    public IEnumerator aaa(){
+        Debug.Log("成功執行a");
+        yield return new WaitForSeconds(1);
     }
+
+
 }

@@ -8,14 +8,7 @@ public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour,
 
     public static T instance = null;
 
-    public static T Instance
-    {
-        get
-        {
-            return instance;
-        }
 
-    }
 
     public void MonoScript()
     {
@@ -33,7 +26,7 @@ public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour,
     public void DontDestoryThis()
     {
         MonoScript();
-        DontDestroyOnLoad(Instance);
+        DontDestroyOnLoad(instance);
     }
 
 }

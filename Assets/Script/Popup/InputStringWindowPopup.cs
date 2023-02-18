@@ -7,17 +7,29 @@ using UnityEngine.Events;
 public class InputStringWindowPopup : MonoBehaviour
 {
   
-public Text InputString;
+public Text mInputString;
 
-public delegate string ReturnText();
+public Button mCorrectButton;
 
-public Text Title;
+
+public UnityAction<string> ReturnList;
+
+public Text mTitle;
 
 public void Init(string _title){
 
-Title.text=_title;
+mTitle.text=_title;
 
 }
+
+public void ClickCorrect(){
+
+ReturnList(mInputString.text);
+transform.parent.GetComponent<FilterScript>().CloseFilter();
+
+}
+
+
 
 
 }

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class ListCard : MonoBehaviour
 {
@@ -11,23 +12,45 @@ public class ListCard : MonoBehaviour
 
     public GameObject expandObject;
 
+    [Header("UI")]
+
     public Text WordsCounts;
     public Text FoundingTime;
     public Text LastOpenTime;
-
-    public Button title;
-    public Button exam;
-
     public Text titleText;
-    public int listNum;
+    public Button ButtonTitle;
+    public Button ButtonExam;
+    public Toggle ToggleChooseDelete;
 
-    public void Init(WordList _list)
+    private event Action<ListCard> mAddDeleteFunc;
+    private event Action<ListCard> mRemoveDeleteFunc;
+    public WordList aData;
+
+    public void Init(WordList _list, Action<ListCard> _addDeleteFunc, Action<ListCard> _removeDeleteFunc)
     {
-        titleText.text = _list.title;
-        listNum = _list.listNum;
-        WordsCounts.text="單字總量:"+(_list.WordsCountOfList()>0?_list.WordsCountOfList():0);
-        FoundingTime.text="創立時間:"+_list.foundingTime;
-        LastOpenTime.text="最後進入:"+_list.lastOpenTime;
+        aData = _list;
+        titleText.text = _list.mTitle;
+        ToggleChooseDelete.isOn = false;
+
+        WordsCounts.text = "單字總量:" + (_list.WordsCountOfList() > 0 ? _list.WordsCountOfList() : 0);
+        FoundingTime.text = "創立時間:" + _list.mFoundingTime;
+        LastOpenTime.text = "最後進入:" + _list.mLastOpenTime;
+
+        mAddDeleteFunc = _addDeleteFunc;
+        mRemoveDeleteFunc = _removeDeleteFunc;
+
+    }
+
+    public void OnToggleChooseDelete()//刪除模式
+    {
+        if (ToggleChooseDelete.isOn)
+        {
+            mAddDeleteFunc(this);
+        }
+        else
+        {
+            mRemoveDeleteFunc(this);
+        }
     }
 
     public void ClickTitleButton()
@@ -41,6 +64,18 @@ public class ListCard : MonoBehaviour
             OpenList();
         }
     }
+
+
+    public void OpenDeleteModel()
+    {
+        ToggleChooseDelete.gameObject.SetActive(true);
+    }
+
+    public void CloseDeleteModel()
+    {
+        ToggleChooseDelete.gameObject.SetActive(false);
+    }
+
 
     private void OpenList()
     {
@@ -59,6 +94,9 @@ public class ListCard : MonoBehaviour
         transform.parent.GetComponent<ContentSizeFitter>().enabled = false;
         transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
     }
+
+
+
 
 
 }
