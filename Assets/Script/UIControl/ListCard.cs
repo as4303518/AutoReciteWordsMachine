@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using System;
+using DG.Tweening;
 
 public class ListCard : MonoBehaviour
 {
@@ -22,11 +23,13 @@ public class ListCard : MonoBehaviour
     public Button ButtonExam;
     public Toggle ToggleChooseDelete;
 
-    private event Action<ListCard> mAddDeleteFunc;
-    private event Action<ListCard> mRemoveDeleteFunc;
-    public WordList aData;
+    public RectTransform ToggleBg;
 
-    public void Init(WordList _list, Action<ListCard> _addDeleteFunc, Action<ListCard> _removeDeleteFunc)
+    private ListCardFunc mFunc;
+
+    public WordListData aData;
+
+    public void Init(WordListData _list, ListCardFunc _func)
     {
         aData = _list;
         titleText.text = _list.mTitle;
@@ -35,9 +38,7 @@ public class ListCard : MonoBehaviour
         WordsCounts.text = "單字總量:" + (_list.WordsCountOfList() > 0 ? _list.WordsCountOfList() : 0);
         FoundingTime.text = "創立時間:" + _list.mFoundingTime;
         LastOpenTime.text = "最後進入:" + _list.mLastOpenTime;
-
-        mAddDeleteFunc = _addDeleteFunc;
-        mRemoveDeleteFunc = _removeDeleteFunc;
+        mFunc = _func;
 
     }
 
@@ -45,11 +46,11 @@ public class ListCard : MonoBehaviour
     {
         if (ToggleChooseDelete.isOn)
         {
-            mAddDeleteFunc(this);
+            mFunc._addDeleteFunc(this);
         }
         else
         {
-            mRemoveDeleteFunc(this);
+            mFunc._removeDeleteFunc(this);
         }
     }
 
@@ -69,34 +70,107 @@ public class ListCard : MonoBehaviour
     public void OpenDeleteModel()
     {
         ToggleChooseDelete.gameObject.SetActive(true);
+        ToggleChooseDelete.interactable = false;
+        StartCoroutine(ToggleXSizeChange(0, 80, 0.2f, () => { ToggleChooseDelete.interactable = true; }));
+
+
     }
 
     public void CloseDeleteModel()
     {
         ToggleChooseDelete.gameObject.SetActive(false);
+        ToggleChooseDelete.interactable = false;
+
     }
+
+
 
 
     private void OpenList()
     {
-        transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 400);
         expandObject.SetActive(true);
         expand = true;
-        transform.parent.GetComponent<ContentSizeFitter>().enabled = false;
-        transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
+        StartCoroutine(ToggleYSizeChange(100, 400));
+
+
+        //transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 400);
+        //刷新parent的尺寸
+        // RefreshContentSizeFitter();
     }
 
     private void CLoseList()
     {
-        transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 100);
-        expandObject.SetActive(false);
+        // transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 100);
+        // expandObject.SetActive(false);
         expand = false;
+        StartCoroutine(ToggleYSizeChange(400, 100,0.2f,()=>{expandObject.SetActive(false);}));
+
+        //刷新parent的尺寸
+        // RefreshContentSizeFitter();
+    }
+
+    private IEnumerator ToggleXSizeChange(float Start, float End, float time = 0.2f, Action callback = null)
+    {
+        ToggleBg.sizeDelta = new Vector2(Start, ToggleBg.sizeDelta.y);
+        float addSpeed = (End - Start) / time * Time.deltaTime;
+        bool rule = Start < End ? ToggleBg.sizeDelta.x < End : ToggleBg.sizeDelta.x >= End;
+
+        while (rule)
+        {
+            Debug.Log("執行");
+            ToggleBg.sizeDelta = new Vector2(ToggleBg.sizeDelta.x + addSpeed, ToggleBg.sizeDelta.y);
+            rule = Start < End ? ToggleBg.sizeDelta.x < End : ToggleBg.sizeDelta.x >= End;
+            yield return null;
+        }
+        if(callback!=null)callback();
+
+    }
+
+    private IEnumerator ToggleYSizeChange(float Start, float End, float time = 0.2f, Action callback = null)
+    {
+        RectTransform Rt=transform.GetComponent<RectTransform>();
+        Rt.sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, Start);
+
+        float addSpeed = (End - Start) / time * Time.deltaTime;
+        bool rule = Start < End ? Rt.sizeDelta.y < End : Rt.sizeDelta.y >= End;
+
+        while (rule)
+        {
+
+            Rt.sizeDelta = new Vector2(Rt.sizeDelta.x, Rt.sizeDelta.y + addSpeed);
+            rule = Start < End ? Rt.sizeDelta.y < End : Rt.sizeDelta.y >= End;
+            RefreshContentSizeFitter();
+            yield return null;
+        }
+        if(callback!=null)callback();
+
+    }
+
+    private void RefreshContentSizeFitter()
+    {
         transform.parent.GetComponent<ContentSizeFitter>().enabled = false;
         transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
+
+    }
+
+
+    public class ListCardFunc
+    {//調用單字列表的其他腳本func
+
+        public Action<ListCard> _addDeleteFunc;
+        public Action<ListCard> _removeDeleteFunc;
+
+        public ListCardFunc(Action<ListCard> addDeleteFunc, Action<ListCard> removeDeleteFunc)
+        {
+
+            _addDeleteFunc = addDeleteFunc;
+            _removeDeleteFunc = removeDeleteFunc;
+
+        }
+
     }
 
 
 
-
-
 }
+

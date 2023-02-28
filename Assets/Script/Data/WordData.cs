@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 [System.Serializable]
-public class Word : MonoBehaviour
+public class WordData : MonoBehaviour
 {
 
     // 一個單字的數據
@@ -12,12 +12,12 @@ public class Word : MonoBehaviour
     public string sentenceTranslate;
 
 
-    private int answerFrequency;
-    private int CorrectFrequency;
-    public int wordNum { get; private set; }
-    public string saveTime { get; private set; }
+    private int answerFrequency;//考試次數
+    private int CorrectFrequency;//正確次數
+    public int wordNum { get; private set; }//單字編號
+    public string saveTime { get; private set; }//創立時間
 
-    public Word(string _context, string _translate, string _saveTime, int _wordNum, string _sentenceContext = null, string _sentenceTranslate = null)
+    public WordData(string _context, string _translate, string _saveTime, int _wordNum, string _sentenceContext = null, string _sentenceTranslate = null)
     {
         context = _context;
         translate = _translate;

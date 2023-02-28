@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using DG.Tweening;
+
 
 public class ListControlManager : InstanceScript<ListControlManager>
 {
@@ -18,7 +20,6 @@ public class ListControlManager : InstanceScript<ListControlManager>
     public Button ButtonCreateList;
     public Button ButtonBack;
     public Button ButtonExam;
-
     public GameObject gListObject;
 
 
@@ -29,25 +30,61 @@ public class ListControlManager : InstanceScript<ListControlManager>
         ControlModel = eListControlModel.Normal;
     }
 
+    public void Start()
+    {
 
+        CreateListOfSaveData();
+
+
+    }
 
     private void CreateListObject(string _title)
     {
         GameObject sp = Instantiate(gListObject);
-        sp.transform.SetParent(gViewPanel.transform);
-        sp.transform.localScale = new Vector3(1, 1, 1);
-        CardList.Add(sp.GetComponent<ListCard>());
-        sp.GetComponent<ListCard>().Init(DataManager.instance.saveData.AddNewList(_title)
-        , AddToDeleteCardList
-        , RemoveToDeleteCardList);
 
+        sp.transform.SetParent(gViewPanel.transform);
+
+        sp.transform.localScale = new Vector3(1, 1, 1);
+
+        CardList.Add(sp.GetComponent<ListCard>());
+
+
+        sp.GetComponent<ListCard>().Init(DataManager.instance.saveData.AddNewList(_title),
+            new ListCard.ListCardFunc(
+            AddToDeleteCardList,
+            RemoveToDeleteCardList
+            ));
     }
+
+    private void CreateListOfSaveData()
+    {//讀取並生成員有資料的字卡
+
+        foreach (KeyValuePair<int, WordListData> Dic in DataManager.instance.saveData.myLists)
+        {
+            GameObject sp = Instantiate(gListObject);
+
+            sp.transform.SetParent(gViewPanel.transform);
+
+            sp.transform.localScale = new Vector3(1, 1, 1);
+            CardList.Add(sp.GetComponent<ListCard>());
+            sp.GetComponent<ListCard>().Init(Dic.Value, new ListCard.ListCardFunc(
+                AddToDeleteCardList,
+                RemoveToDeleteCardList
+                ));
+        }
+    }
+
+
 
     public void ClickNewListButton()
     {
+        CancelDeleteModel();
         PopupManager.instance.OpenInputStringOneCurrectButtonWindow(CreateListObject);
     }
-    public void ClickDeleteButton()
+
+
+
+    public void ClickDeleteButton()//切換刪除按鈕功能
     {
         switch (ControlModel)
         {
@@ -65,38 +102,43 @@ public class ListControlManager : InstanceScript<ListControlManager>
                 RemoveCardListDatafoAll();
                 //刪除那些被移除的list並從新整理Datamanager
                 DeleteCardList.Clear();
-                CardList.ForEach(v => { v.CloseDeleteModel(); });
+                CardList.ForEach(v => { v.CloseDeleteModel(); });//恢復平常模式
                 break;
         }
 
     }
 
-    private void RemoveCardListDatafoAll()
+    private void CancelDeleteModel()
     {
-        // CardList.ForEach(cv=>{
-        //     DeleteCardList.ForEach(dv=>{
+        // DeleteCardList.ForEach(v => { v.ToggleChooseDelete.isOn = false; });
 
-        //         Destroy(dv);
-        //         });
+        ButtonDelete.GetComponent<Image>().color = Color.black;
+        ControlModel = eListControlModel.Normal;
+        CardList.ForEach(v => { 
+            v.CloseDeleteModel(); 
+            v.ToggleChooseDelete.isOn=false;
+            });//恢復平常模式
+        DeleteCardList.Clear();
+    }
 
-        // });
+    private void RemoveCardListDatafoAll()//刪除卡牌
+    {
+
         DeleteCardList.ForEach(dv =>
         {
             DataManager.instance.saveData.myLists.Remove(dv.aData.mListNum);
             CardList.Remove(dv);
             Destroy(dv.gameObject);
         });
-        
-        //DataManager.instance.saveData.TraverseMyLists("刪除後");
 
     }
 
-    public void AddToDeleteCardList(ListCard _listCard)
+    public void AddToDeleteCardList(ListCard _listCard)//將卡牌新增到刪除列表
     {
         DeleteCardList.Add(_listCard);
     }
 
-    public void RemoveToDeleteCardList(ListCard _listCard)
+    public void RemoveToDeleteCardList(ListCard _listCard)//將卡牌移除刪除列表
     {
         DeleteCardList.Remove(_listCard);
     }

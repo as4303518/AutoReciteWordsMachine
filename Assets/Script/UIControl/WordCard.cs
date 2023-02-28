@@ -11,7 +11,7 @@ public class WordCard : MonoBehaviour
     public string sentenceContext;
     public string sentenceTranslate;
 
-    void Init(Word _word)
+    void Init(WordData _word)
     {
         context = _word.context;
         translate = _word.translate;

@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Events;
 using DG.Tweening;
+using System;
 public class PopupManager : InstanceScript<PopupManager>
 {
 
@@ -19,7 +21,8 @@ public class PopupManager : InstanceScript<PopupManager>
         DontDestoryThis();
     }
 
-    private IEnumerator<string> fff(){
+    private IEnumerator<string> fff()
+    {
 
         yield return null;
 
@@ -27,16 +30,16 @@ public class PopupManager : InstanceScript<PopupManager>
 
     }
 
-    public GameObject OpenPopup(GameObject _popup, UnityAction _callBack = null)
+    public GameObject OpenPopup(GameObject _popup, Action _callBack = null)
     {
-        string aa=fff().Current;
-        
+        string aa = fff().Current;
+
         if (FilterParentCanvas == null) FilterParentCanvas = GameObject.Find("PopupLayer");
 
         GameObject sp = Instantiate(_popup);
 
-        GameObject filter = Instantiate(Filter,FilterParentCanvas.transform);
-        filter.GetComponent<FilterScript>().Init(PopupNum,ClosePopup);
+        GameObject filter = Instantiate(Filter, FilterParentCanvas.transform);
+        filter.GetComponent<FilterScript>().Init(PopupNum, ClosePopup);
 
 
         //filter.transform.SetParent(FilterParentCanvas.transform);
@@ -50,18 +53,30 @@ public class PopupManager : InstanceScript<PopupManager>
         {
             filter.GetComponent<FilterScript>().SetButtonFunc(_callBack);
         }
- 
+
         PopupNum++;
         return sp;
     }
 
-    public void OpenInputStringOneCurrectButtonWindow(UnityAction<string> _correctButton,UnityAction _filterCallBack = null)
+    public void OpenInputStringOneCurrectButtonWindow(Action<string> _correctButton, Action _filterCallBack = null)
     {
-    InputStringWindowPopup sp=OpenPopup(Resources.Load<GameObject>(ResourcesPath.PopupWindowPath+"InputStringWindowPopup"),_filterCallBack).GetComponent<InputStringWindowPopup>();
-    sp.ReturnList+=_correctButton;
-    sp.Init("請輸入群組名稱");
-    
+        InputStringWindowPopup sp = OpenPopup
+        (Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "InputStringWindowPopup"), _filterCallBack)
+        .GetComponent<InputStringWindowPopup>();
+        sp.ReturnList += _correctButton;
+        sp.Init("請輸入群組名稱");
 
+
+    }
+
+    public void OpenHintOnlyStringWindow(string title, string Content )
+    {
+        HintPopup sp = OpenPopup(Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "HintWindowPopup"))
+        .GetComponent<HintPopup>();
+        sp.transform.parent.GetComponent<Image>().color=new Color(0,0,0,0);
+        sp.Init(title,Content);
+        Destroy(sp.transform.parent.gameObject,2);
+        
     }
 
 

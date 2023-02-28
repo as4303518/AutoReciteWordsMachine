@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Events;
+using System;
 
 public class FilterScript : MonoBehaviour
 {
@@ -15,14 +16,21 @@ public class FilterScript : MonoBehaviour
     {
         FilterNum = _filterNum;
         CloseWindow += _closeWindow;
-        transform.GetComponent<Button>().onClick.AddListener(CloseFilter);
+        SetDefaultCloseOfFilter();
+        
     }
 
-    public void SetButtonFunc(UnityAction _callBack)
+    public void SetButtonFunc(Action _callBack)
     {
-        transform.GetComponent<Button>().onClick.AddListener(_callBack);
+        transform.GetComponent<Button>().onClick.AddListener(()=>{_callBack();});
 
 
+    }
+
+    public void SetDefaultCloseOfFilter()
+    {
+
+        transform.GetComponent<Button>().onClick.AddListener(CloseFilter);
     }
     public void CloseFilter()
     {
