@@ -26,9 +26,9 @@ public class InputStringWindowPopup : MonoBehaviour
 
     public void ClickCorrect()
     {
-        if (DataManager.instance.saveData.CheckListTitleRepeat(mInputString.text))
+        if (DataManager.Instance.saveData.CheckListTitleRepeat(mInputString.text))
         {
-            PopupManager.instance.OpenHintOnlyStringWindow("創建失敗!","你已擁有相同主題的群組");
+            PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!","不適用或重複的標題的名字");
         }
         else
         {

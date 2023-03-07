@@ -6,15 +6,15 @@ public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour,
 {
     // Start is called before the first frame update
 
-    public static T instance = null;
+    public static T Instance = null;
 
 
 
     public void MonoScript()
     {
-        if (instance == null)
+        if (Instance == null)
         {
-            instance = transform.GetComponent<T>();
+            Instance = transform.GetComponent<T>();
         }
         else
         {
@@ -26,7 +26,7 @@ public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour,
     public void DontDestoryThis()
     {
         MonoScript();
-        DontDestroyOnLoad(instance);
+        DontDestroyOnLoad(Instance);
     }
 
 }

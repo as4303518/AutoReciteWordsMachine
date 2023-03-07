@@ -10,6 +10,7 @@ public class ListCard : MonoBehaviour
     //list實體化腳本
     //開啟與關閉坐在title上，進入單字選單做在打開後的物件上
     public bool expand = false;
+    public bool bntAni = false;//偵測這個物件是否在動畫的狀態，如果有就不要執行其他動畫，以免衝突
 
     public GameObject expandObject;
 
@@ -29,15 +30,15 @@ public class ListCard : MonoBehaviour
 
     public WordListData aData;
 
-    public void Init(WordListData _list, ListCardFunc _func)
+    public void Init(WordListData _Data, ListCardFunc _func)
     {
-        aData = _list;
-        titleText.text = _list.mTitle;
+        aData = _Data;
+        titleText.text = _Data.mTitle;
         ToggleChooseDelete.isOn = false;
 
-        WordsCounts.text = "單字總量:" + (_list.WordsCountOfList() > 0 ? _list.WordsCountOfList() : 0);
-        FoundingTime.text = "創立時間:" + _list.mFoundingTime;
-        LastOpenTime.text = "最後進入:" + _list.mLastOpenTime;
+        WordsCounts.text = "單字總量:" + (_Data.WordsCountOfList() > 0 ? _Data.WordsCountOfList() : 0);
+        FoundingTime.text = "創立時間:" + _Data.mFoundingTime;
+        LastOpenTime.text = "最後進入:" + _Data.mLastOpenTime;
         mFunc = _func;
 
     }
@@ -46,15 +47,15 @@ public class ListCard : MonoBehaviour
     {
         if (ToggleChooseDelete.isOn)
         {
-            mFunc._addDeleteFunc(this);
+            mFunc._AddDeleteFunc(this);
         }
         else
         {
-            mFunc._removeDeleteFunc(this);
+            mFunc._RemoveDeleteFunc(this);
         }
     }
 
-    public void ClickTitleButton()
+    public void ClickTitleButton()//點擊標題，縮放單字組列表
     {
         if (expand)
         {
@@ -66,6 +67,25 @@ public class ListCard : MonoBehaviour
         }
     }
 
+    public void ClickContentButton()
+    {
+        StartCoroutine(IEContentButton());
+        //按鈕不可再按
+
+    }
+
+    public IEnumerator IEContentButton()
+    {
+        yield return PopupManager.Instance.OpenLoading();
+        yield return mFunc._CloseList();
+        Debug.Log("進入場景" + aData.mTitle);
+        yield return new WaitForSeconds(2);
+        yield return mFunc._OpenList();
+        yield return PopupManager.Instance.CloseLoading();
+        Debug.Log("已過兩秒");
+
+    }
+
 
     public void OpenDeleteModel()
     {
@@ -73,14 +93,12 @@ public class ListCard : MonoBehaviour
         ToggleChooseDelete.interactable = false;
         StartCoroutine(ToggleXSizeChange(0, 80, 0.2f, () => { ToggleChooseDelete.interactable = true; }));
 
-
     }
 
     public void CloseDeleteModel()
     {
         ToggleChooseDelete.gameObject.SetActive(false);
         ToggleChooseDelete.interactable = false;
-
     }
 
 
@@ -88,28 +106,20 @@ public class ListCard : MonoBehaviour
 
     private void OpenList()
     {
+        if (bntAni) return;
         expandObject.SetActive(true);
         expand = true;
         StartCoroutine(ToggleYSizeChange(100, 400));
-
-
-        //transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 400);
-        //刷新parent的尺寸
-        // RefreshContentSizeFitter();
     }
 
     private void CLoseList()
     {
-        // transform.GetComponent<RectTransform>().sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, 100);
-        // expandObject.SetActive(false);
+        if (bntAni) return;
         expand = false;
-        StartCoroutine(ToggleYSizeChange(400, 100,0.2f,()=>{expandObject.SetActive(false);}));
-
-        //刷新parent的尺寸
-        // RefreshContentSizeFitter();
+        StartCoroutine(ToggleYSizeChange(400, 100, 0.2f, () => { expandObject.SetActive(false); }));
     }
 
-    private IEnumerator ToggleXSizeChange(float Start, float End, float time = 0.2f, Action callback = null)
+    private IEnumerator ToggleXSizeChange(float Start, float End, float time = 0.2f, Action callback = null)//List 刪除按鈕動畫
     {
         ToggleBg.sizeDelta = new Vector2(Start, ToggleBg.sizeDelta.y);
         float addSpeed = (End - Start) / time * Time.deltaTime;
@@ -117,18 +127,18 @@ public class ListCard : MonoBehaviour
 
         while (rule)
         {
-            Debug.Log("執行");
             ToggleBg.sizeDelta = new Vector2(ToggleBg.sizeDelta.x + addSpeed, ToggleBg.sizeDelta.y);
             rule = Start < End ? ToggleBg.sizeDelta.x < End : ToggleBg.sizeDelta.x >= End;
             yield return null;
         }
-        if(callback!=null)callback();
+        if (callback != null) callback();
 
     }
 
     private IEnumerator ToggleYSizeChange(float Start, float End, float time = 0.2f, Action callback = null)
     {
-        RectTransform Rt=transform.GetComponent<RectTransform>();
+        bntAni = true;
+        RectTransform Rt = transform.GetComponent<RectTransform>();
         Rt.sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, Start);
 
         float addSpeed = (End - Start) / time * Time.deltaTime;
@@ -142,7 +152,8 @@ public class ListCard : MonoBehaviour
             RefreshContentSizeFitter();
             yield return null;
         }
-        if(callback!=null)callback();
+        bntAni = false;
+        if (callback != null) callback();
 
     }
 
@@ -157,18 +168,26 @@ public class ListCard : MonoBehaviour
     public class ListCardFunc
     {//調用單字列表的其他腳本func
 
-        public Action<ListCard> _addDeleteFunc;
-        public Action<ListCard> _removeDeleteFunc;
+        public Action<ListCard> _AddDeleteFunc;
+        public Action<ListCard> _RemoveDeleteFunc;
+        public Func<IEnumerator> _CloseList;//關閉單字組列表  單字組列表-->單字列表
 
-        public ListCardFunc(Action<ListCard> addDeleteFunc, Action<ListCard> removeDeleteFunc)
+        public Func<IEnumerator> _OpenList;//關閉單字組列表  單字組列表-->單字列表
+
+        public ListCardFunc(Action<ListCard> addDeleteFunc, Action<ListCard> removeDeleteFunc, Func<IEnumerator> closeList,Func<IEnumerator> openList)
         {
 
-            _addDeleteFunc = addDeleteFunc;
-            _removeDeleteFunc = removeDeleteFunc;
+            _AddDeleteFunc = addDeleteFunc;
+            _RemoveDeleteFunc = removeDeleteFunc;
+            _CloseList = closeList;
+
+            _OpenList=openList;
 
         }
 
     }
+
+
 
 
 

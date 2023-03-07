@@ -6,13 +6,15 @@ using System.Linq;
 
 public class DataManager : InstanceScript<DataManager>
 {
-
+    
+    public BaseData mParams;//轉場暫時儲存數據
     public SaveData saveData = new SaveData();
 
     [SerializeField] private int CurrentListNum;//紀錄現在所在的list,儲存這個號碼之後只要在savedata dic裡面撈
 
     void Awake()
     {
+        
         DontDestoryThis();
         GetSaveData();
     }
@@ -20,6 +22,7 @@ public class DataManager : InstanceScript<DataManager>
     public bool change = true;
     void Start()
     {
+        
         // // saveData = new SaveData();
         // // saveData.AddNewList("第一課");
         // if (PlayerPrefs.GetString("SaveData") != "")
@@ -41,7 +44,7 @@ public class DataManager : InstanceScript<DataManager>
 
         saveData.SetDicDataToList();
 
-        PlayerPrefs.SetString("SaveData", JsonUtility.ToJson(DataManager.instance.saveData));
+        PlayerPrefs.SetString("SaveData", JsonUtility.ToJson(DataManager.Instance.saveData));
 
     }
 
@@ -51,7 +54,7 @@ public class DataManager : InstanceScript<DataManager>
         if (PlayerPrefs.GetString("SaveData") != "")
         {
 
-            DataManager.instance.saveData = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString("SaveData"));
+            DataManager.Instance.saveData = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString("SaveData"));
             saveData.SetJsonListToDic();
 
         }
@@ -88,11 +91,20 @@ public class DataManager : InstanceScript<DataManager>
             return myLists[ListCount - 1];
         }
 
-        public bool CheckListTitleRepeat(string InPutTitle){
-            bool Repeat=false;
-            foreach(var Dic in myLists){
-                if(InPutTitle==Dic.Value.mTitle){
-                    Repeat=true;
+        public bool CheckListTitleRepeat(string InPutTitle)
+        {
+
+            if (InPutTitle == "" || InPutTitle.Length <= 0)//標題一定要有文字
+            {
+                return true;
+            }
+
+            bool Repeat = false;
+            foreach (var Dic in myLists)
+            {
+                if (InPutTitle == Dic.Value.mTitle)
+                {
+                    Repeat = true;
                     Debug.Log("標題重複");
                 }
             }

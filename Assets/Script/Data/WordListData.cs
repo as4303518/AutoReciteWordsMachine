@@ -6,7 +6,7 @@ using System;
 
 //[System.Serializable]
 [Serializable]
-public class WordListData
+public class WordListData:BaseData
 {
     //單字列表裡的管理員，負責顯示這個列表所有的單字數據
     public string mTitle;//標題

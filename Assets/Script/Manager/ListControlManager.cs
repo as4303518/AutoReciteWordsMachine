@@ -7,6 +7,7 @@ using DG.Tweening;
 
 public class ListControlManager : InstanceScript<ListControlManager>
 {
+    public GameObject MainScene;
     [SerializeField]
     private List<ListCard> CardList = new List<ListCard>();
     [SerializeField]
@@ -22,23 +23,30 @@ public class ListControlManager : InstanceScript<ListControlManager>
     public Button ButtonExam;
     public GameObject gListObject;
 
+    public GameObject LiftMenu;//左邊的選單列表
+
+
 
     private void Awake()
     {
-
         MonoScript();
         ControlModel = eListControlModel.Normal;
     }
 
     public void Start()
     {
-
-        CreateListOfSaveData();
-
-
+        StartCoroutine(Init());
     }
 
-    private void CreateListObject(string _title)
+    public IEnumerator Init()
+    {
+        CreateListOfSaveData();
+        yield return PageTweenIn();
+    }
+
+
+
+    private void CreateListObject(string _title)//新增單字組
     {
         GameObject sp = Instantiate(gListObject);
 
@@ -48,18 +56,13 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
         CardList.Add(sp.GetComponent<ListCard>());
 
-
-        sp.GetComponent<ListCard>().Init(DataManager.instance.saveData.AddNewList(_title),
-            new ListCard.ListCardFunc(
-            AddToDeleteCardList,
-            RemoveToDeleteCardList
-            ));
+        sp.GetComponent<ListCard>().Init(DataManager.Instance.saveData.AddNewList(_title), CreateListCardFunc());
     }
 
-    private void CreateListOfSaveData()
-    {//讀取並生成員有資料的字卡
+    private void CreateListOfSaveData()//從savedata新增單字組
+    {
 
-        foreach (KeyValuePair<int, WordListData> Dic in DataManager.instance.saveData.myLists)
+        foreach (KeyValuePair<int, WordListData> Dic in DataManager.Instance.saveData.myLists)
         {
             GameObject sp = Instantiate(gListObject);
 
@@ -67,23 +70,51 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
             sp.transform.localScale = new Vector3(1, 1, 1);
             CardList.Add(sp.GetComponent<ListCard>());
-            sp.GetComponent<ListCard>().Init(Dic.Value, new ListCard.ListCardFunc(
-                AddToDeleteCardList,
-                RemoveToDeleteCardList
-                ));
+            sp.GetComponent<ListCard>().Init(Dic.Value, CreateListCardFunc());
         }
     }
 
-
-
-    public void ClickNewListButton()
+    private ListCard.ListCardFunc CreateListCardFunc()//將控制中央面板的方法，覆值在每個cardList上
     {
-        CancelDeleteModel();
-        PopupManager.instance.OpenInputStringOneCurrectButtonWindow(CreateListObject);
+
+        ListCard.ListCardFunc func = new ListCard.ListCardFunc(
+                AddToDeleteCardList,
+                RemoveToDeleteCardList,
+                PageTweenOut,
+                PageTweenIn
+        );
+        return func;
     }
 
 
+    public void ClickNewListButton()//開啟取名字的視窗
+    {
+        CancelDeleteModel();
+        PopupManager.Instance.OpenInputStringOneCurrectButtonWindow(CreateListObject);
+    }
 
+    private bool LiftMenuAni = false;
+    private bool LiftMenuExpand = false;
+
+    public void ClickLiftMenuButton()//點擊選單列表
+    {
+        if (LiftMenuAni) return;
+
+        if (LiftMenuExpand)
+        {
+            LiftMenu.transform.DOLocalMoveX(0, 0.3f);
+            LiftMenuExpand = false;
+        }
+        else
+        {
+            LiftMenu.transform.DOLocalMoveX(670, 0.3f);
+            LiftMenuExpand = true;
+        }
+
+    }
+
+
+    //以下為刪除功能
     public void ClickDeleteButton()//切換刪除按鈕功能
     {
         switch (ControlModel)
@@ -114,10 +145,11 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
         ButtonDelete.GetComponent<Image>().color = Color.black;
         ControlModel = eListControlModel.Normal;
-        CardList.ForEach(v => { 
-            v.CloseDeleteModel(); 
-            v.ToggleChooseDelete.isOn=false;
-            });//恢復平常模式
+        CardList.ForEach(v =>
+        {
+            v.CloseDeleteModel();
+            v.ToggleChooseDelete.isOn = false;
+        });//恢復平常模式
         DeleteCardList.Clear();
     }
 
@@ -126,7 +158,7 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
         DeleteCardList.ForEach(dv =>
         {
-            DataManager.instance.saveData.myLists.Remove(dv.aData.mListNum);
+            DataManager.Instance.saveData.myLists.Remove(dv.aData.mListNum);
             CardList.Remove(dv);
             Destroy(dv.gameObject);
         });
@@ -142,6 +174,27 @@ public class ListControlManager : InstanceScript<ListControlManager>
     {
         DeleteCardList.Remove(_listCard);
     }
+
+    public IEnumerator PageTweenOut()
+    {//轉場去其他頁面
+        Debug.Log("離去單字組");
+        yield return PopupManager.Instance.OpenLoading();
+        yield return TweenAniManager.TransparentOutGroup(MainScene);
+
+    }
+
+    public IEnumerator PageTweenIn()
+    {//轉場去其他頁面
+        Debug.Log("進入單字組");
+        yield return TweenAniManager.TransparentInGroup(MainScene);
+        PopupManager.Instance.CloseLoading();
+
+    }
+
+
+
+
+
 }
 
 enum eListControlModel
