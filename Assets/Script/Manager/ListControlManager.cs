@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 
 
-public class ListControlManager : PrefabScene
+public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
 {
     [SerializeField]
     private List<ListCard> CardList = new List<ListCard>();
@@ -16,10 +16,14 @@ public class ListControlManager : PrefabScene
 
     public GameObject gViewPanel;//字卡陣列母物件
     [Header("ButtonUI")]
-    public Button ButtonDelete;
     public Button ButtonCreateList;
-    public Button ButtonBack;
+    public Button ButtonDelete;
     public Button ButtonExam;
+
+    public Button isFinishWordButton;
+    public Button Setting;
+
+        public Button ButtonBack;
     public GameObject gListObject;
 
     public GameObject LiftMenu;//左邊的選單列表
@@ -37,7 +41,7 @@ public class ListControlManager : PrefabScene
     //     StartCoroutine(Init());
     // }
 
-    public override IEnumerator Init(BaseData baseData)
+    public  IEnumerator Init(BaseData baseData)
     {
 
         CreateListOfSaveData();
@@ -173,7 +177,7 @@ public class ListControlManager : PrefabScene
         DeleteCardList.Remove(_listCard);
     }
 
-    public override IEnumerator PageTweenOut()
+    public  IEnumerator PageTweenOut()
     {//轉場去其他頁面
         Debug.Log("離去單字組列表");
         yield return PopupManager.Instance.OpenLoading();
@@ -181,16 +185,13 @@ public class ListControlManager : PrefabScene
         //Destroy(this.gameObject);
     }
 
-    public override IEnumerator PageTweenIn()
+    public  IEnumerator PageTweenIn()
     {//轉場去其他頁面
         Debug.Log("進入單字組列表");
         yield return TweenAniManager.TransparentInGroup(transform.gameObject);
         yield return PopupManager.Instance.CloseLoading();
 
     }
-
-
-
 
 
 }

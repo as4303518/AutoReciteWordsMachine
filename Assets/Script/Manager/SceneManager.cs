@@ -2,6 +2,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
+using System;
+
+
+
+
+
 
 
 //控制轉場切換的管理員
@@ -14,7 +20,8 @@ public class SceneManager : InstanceScript<SceneManager>
 
     public GameObject test = null;
 
-    private Dictionary<SceneType, PrefabScene> mSceneList = new Dictionary<SceneType, PrefabScene>();
+    // private Dictionary<SceneType, GameObject> mSceneList = new Dictionary<SceneType,GameObject>();
+    private GameObject CurScene=null;
     [SerializeField] private List<SceneType> mSceneSquence = new List<SceneType>();//儲存經過的場景
 
     private Dictionary<SceneType, string> ScenePathOfResources = new Dictionary<SceneType, string>(){
@@ -27,16 +34,16 @@ public class SceneManager : InstanceScript<SceneManager>
 
         SceneParent = GameObject.Find("PrefabSceneLayer");
         mSceneSquence.Add(SceneType.Non);
-        mSceneList.Add(SceneType.Non, null);
+        // mSceneList.Add(SceneType.Non, null);
         yield return null;
     }
     public void StartChangScene(SceneType goToScene, BaseData _data = null)
     {
-        StartCoroutine(ChangeScene(goToScene,_data));
+        StartCoroutine(ChangeScene(goToScene, _data));
 
     }
 
-
+    
 
 
     public IEnumerator ChangeScene(SceneType goToScene, BaseData _data = null)
@@ -47,14 +54,14 @@ public class SceneManager : InstanceScript<SceneManager>
         }
         yield return PopupManager.Instance.OpenLoading();
 
-        Debug.Log("測試" + mSceneList[GetNowScene()]);
+        
 
         test = Resources.Load<GameObject>(ScenePathOfResources[SceneType.WordControlManager]);
 
-        yield return mSceneList[GetNowScene()] == null ? null : mSceneList[GetNowScene()].PageTweenOut();
-
+        yield return CurScene == null ? null : CurScene.GetComponent<PrefabScene>().PageTweenOut();
+        Destroy(CurScene);
         ResourceRequest rq = Resources.LoadAsync<GameObject>(ScenePathOfResources[goToScene]);
-        yield return new WaitUntil(()=>rq.isDone);
+        yield return new WaitUntil(() => rq.isDone);
         GameObject scene = Instantiate(rq.asset, SceneParent.transform) as GameObject;
 
         CanvasGroup Cg;
@@ -69,14 +76,17 @@ public class SceneManager : InstanceScript<SceneManager>
 
         Cg.alpha = 0f;
         PrefabScene preScene = scene.GetComponent<PrefabScene>();
-        preScene.MonoScript();
+    
+        
+        scene.GetComponent<InstanceFunc>().MonoScript();
+        CurScene=scene;
         mSceneSquence.Add(goToScene);
-        mSceneList.Add(goToScene, preScene);
-        Debug.Log("測試6");
+
+
         yield return preScene.Init(_data);
-        Debug.Log("測試7");
+
         yield return preScene.PageTweenIn();
-        Debug.Log("測試8");
+
         yield return PopupManager.Instance.CloseLoading();
 
     }
@@ -101,10 +111,9 @@ public class SceneManager : InstanceScript<SceneManager>
         return mSceneSquence[mSceneSquence.Count - 2];
     }
 
-    public PrefabScene GetNowScenePrefabs()
+    public GameObject GetNowScenePrefabs()
     {
-
-        return mSceneList[mSceneSquence[mSceneSquence.Count - 1]];
+        return CurScene ;
     }
 
     public enum SceneType
@@ -114,4 +123,12 @@ public class SceneManager : InstanceScript<SceneManager>
         WordControlManager
 
     }
+
+
+
+
+
 }
+
+
+

@@ -18,17 +18,20 @@ public class CreateWordPopup : MonoBehaviour
 
     public Button establish;
 
-    private Action<WordData> CreateWord;
+    private Action<WordData,int> CreateWord;
 
     private Action<GameObject> CloseFilter;
     private int WordCardNum = 0;
 
+    private int CardSquenceNum;
 
-    public void Init(int wordCardNum, Action<WordData> createWord, Action<GameObject> closeFilter)
+
+    public void Init(int wordCardNum,int cardSquenceNum, Action<WordData,int> createWord, Action<GameObject> closeFilter)
     {
         WordCardNum = wordCardNum;
         CreateWord = createWord;
         CloseFilter = closeFilter;
+        CardSquenceNum=cardSquenceNum;
         establish.onClick.AddListener(ClickEstablishWord);
 
     }
@@ -43,7 +46,7 @@ public class CreateWordPopup : MonoBehaviour
         }
         else
         {
-            CreateWord(new WordData(inputWord.text, inputTransTale.text, WordCardNum, inputSentence.text, mTag.options[mTag.value].text));
+            CreateWord(new WordData(inputWord.text, inputTransTale.text, WordCardNum, inputSentence.text, mTag.options[mTag.value].text),CardSquenceNum);
             CloseFilter(transform.parent.gameObject);
         }
 

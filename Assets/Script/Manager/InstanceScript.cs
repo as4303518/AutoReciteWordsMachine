@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
-public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour, new()
+public abstract class InstanceScript<T> : MonoBehaviour,InstanceFunc where T :MonoBehaviour, new()
 {
     // Start is called before the first frame update
 
@@ -43,6 +44,17 @@ public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour,
     {
         yield return null;
     }
+
+
+}
+
+public interface InstanceFunc{//可以避免白癡的c# 硬要在沒用到犯行的class帶泛型
+
+public void MonoScript();
+
+public IEnumerator DontDestoryThis();
+
+public  IEnumerator Init();
 
 
 }

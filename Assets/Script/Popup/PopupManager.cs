@@ -109,11 +109,11 @@ public class PopupManager : InstanceScript<PopupManager>
 
     }
 
-    public void OpenEstablishWordPopup(Action<WordData> _correctButton,int wordCardNum, Action _filterCallBack = null){//創建單字視窗
+    public void OpenEstablishWordPopup(Action<WordData,int> _correctButton,int cardSquenceNum,int wordCardNum, Action _filterCallBack = null){//創建單字視窗
 
         CreateWordPopup sp=OpenPopup(Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "CreateWordPopup"),_filterCallBack)
         .GetComponent<CreateWordPopup>();
-        sp.Init(wordCardNum,_correctButton,ClosePopup);
+        sp.Init(wordCardNum,cardSquenceNum,_correctButton,ClosePopup);
 
     }
 

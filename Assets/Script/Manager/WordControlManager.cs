@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 using System.Linq;
 
-public class WordControlManager : PrefabScene
+public class WordControlManager : InstanceScript<WordControlManager>, PrefabScene
 {
 
     //根據params 選出對應的字卡陣列，生產出字卡
@@ -16,7 +16,7 @@ public class WordControlManager : PrefabScene
 
     public WordListData aData;
 
-    public List<WordCard> WordCardList = new List<WordCard>();
+    public List<WordCard> WordCardList = new List<WordCard>();//生成出來的卡陣列
 
     [SerializeField] private List<WordCard> TempChooseCardList = new List<WordCard>();//將選擇的卡加入此陣列，目前用作刪除用，未來可能會有其他用途，都可以使用此陣列
 
@@ -31,12 +31,16 @@ public class WordControlManager : PrefabScene
     public Text Count;
 
     public Button DeleteButton;
+    public Button CreateButton;
+    public Button BackButton;
 
     void Awake()
     {//到時會使用切換場景的方式呼叫，目前先用awake
 
         //MonoScript();
-        Init(TestListData());
+        Debug.Log("awake有執行");
+        //Init(TestListData());
+
     }
 
     private WordListData TestListData()//暫時測試
@@ -49,10 +53,10 @@ public class WordControlManager : PrefabScene
     }
 
 
-    public override IEnumerator Init(BaseData _wordListData)
+    public IEnumerator Init(BaseData _wordListData)
     {
         aData = _wordListData as WordListData;
-        Debug.Log("以初始化==>"+gameObject.name);
+        Debug.Log("以初始化==>" + gameObject.name);
         CreateWordCardToView();
         UIUpdate();
         ButtonSetting();
@@ -69,6 +73,8 @@ public class WordControlManager : PrefabScene
 
     private void ButtonSetting()
     {
+        BackButton.onClick.AddListener(GoToWordListCard);
+        CreateButton.onClick.AddListener(OpenEstablishPopupWindow);
         DeleteButton.onClick.AddListener(ClickDeleteButton);
 
 
@@ -77,20 +83,13 @@ public class WordControlManager : PrefabScene
     {
 
         int ListCount = 1;
-        aData.mWords.ForEach(v =>
+
+        for (int i = 0; i < aData.mWords.Count; i++)
         {
-            GameObject sp = Instantiate(WordCardPrefabs, gViewParent.transform);
-            sp.GetComponent<RectTransform>().localScale = Vector3.one;
-
-            sp.GetComponent<WordCard>().Init(v, new WordCard.WordCardFunc(
-            ListCount,
-            AddWordCardToTempList,
-            RemoveWordCardToTempList
-            ));
-
-            WordCardList.Add(sp.GetComponent<WordCard>());
+            CreateNewWord(aData.mWords[i], ListCount, false);
             ListCount++;
-        });
+
+        }
     }
 
     public void SaveWordInfo(WordCard Wc)//更新陣列單字的狀態---待驗證
@@ -109,19 +108,21 @@ public class WordControlManager : PrefabScene
 
     public void OpenEstablishPopupWindow()//生成單字前的談窗
     {
-        PopupManager.Instance.OpenEstablishWordPopup(CreateNewWord, aData.GetListWordNewNum());
+        PopupManager.Instance.OpenEstablishWordPopup(CreateNewWord, aData.mWords.Count, aData.GetListWordNewNum());
 
     }
 
-    private void CreateNewWord(WordData wd)//生成新的字卡
+    private void CreateNewWord(WordData wd, int CardNum, bool AddListData)//生成新的字卡
     {
-
-        aData.mWords.Add(wd);//以新增卡片，所以把卡的資料加到陣列
-        aData.wordCardAllCount += 1;
+        if (AddListData)
+        {
+            aData.mWords.Add(wd);//以新增卡片，所以把卡的資料加到陣列
+            aData.wordCardAllCount += 1;//幫預設id加1
+        }
         GameObject sp = Instantiate(WordCardPrefabs, gViewParent.transform);
 
         sp.GetComponent<WordCard>().Init(wd, new WordCard.WordCardFunc(
-            aData.mWords.Count,
+            CardNum,//順序編號
             AddWordCardToTempList,
             RemoveWordCardToTempList
             ));
@@ -130,6 +131,12 @@ public class WordControlManager : PrefabScene
         WordCardList.Add(sp.GetComponent<WordCard>());
 
         // sp.GetComponent<WordCard>().Init()
+
+    }
+    private void CreateNewWord(WordData wd, int CardNum)//生成新的字卡
+    {
+
+        CreateNewWord(wd, CardNum, true);
 
     }
 
@@ -186,7 +193,12 @@ public class WordControlManager : PrefabScene
         });
     }
 
-    public override IEnumerator PageTweenOut()
+    public void GoToWordListCard()
+    {
+        SceneManager.Instance.StartChangScene(SceneManager.SceneType.ListControlManager);
+    }
+
+    public IEnumerator PageTweenOut()
     {//轉場去其他頁面
         Debug.Log("離去單字組");
         yield return PopupManager.Instance.OpenLoading();
@@ -194,7 +206,7 @@ public class WordControlManager : PrefabScene
 
     }
 
-    public override IEnumerator PageTweenIn()
+    public IEnumerator PageTweenIn()
     {//轉場去其他頁面
 
         Debug.Log("進入單字組");
