@@ -3,7 +3,10 @@ guid: b596af245fac38e458edabf010d51900
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - FilterParentCanvas: {instanceID: 0}
+  - LoadingLayer: {instanceID: 0}
+  - Filter: {fileID: 994589322239274911, guid: 7f1bf1fbadb7ccf42987240914aaa620, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

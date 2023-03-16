@@ -19,18 +19,20 @@ public class PopupManager : InstanceScript<PopupManager>
     private int PopupNum = 0;
     public Dictionary<int, GameObject> PopupList = new Dictionary<int, GameObject>();
 
-    public void Awake()
-    {
-        DontDestoryThis();
-        StartCoroutine(Init());
-    }
+    // public void Awake()
+    // {
+    //     DontDestoryThis();
+    //     StartCoroutine(Init());
+    // }
 
-    public IEnumerator Init()
+    public override IEnumerator Init()
     {
 
         LoadingLayer = GameObject.Find("LoadingLayer");
 
         FilterParentCanvas = GameObject.Find("PopupLayer");
+
+        Filter=Resources.Load<GameObject>(ResourcesPath.PopupWindowPath+"Filter");
 
         ResourceRequest resRe = Resources.LoadAsync<GameObject>("Prefabs/Popup/LoadingScreen");
 
@@ -72,6 +74,7 @@ public class PopupManager : InstanceScript<PopupManager>
         sp.transform.SetParent(filter.transform);
         filter.transform.localScale = Vector3.one;
         sp.transform.localScale = Vector3.one;
+        sp.transform.localPosition=Vector3.zero;
 
         PopupList.Add(PopupNum, filter);
 
@@ -84,13 +87,13 @@ public class PopupManager : InstanceScript<PopupManager>
         return sp;
     }
 
-    public void OpenInputStringOneCurrectButtonWindow(Action<string> _correctButton, Action _filterCallBack = null)
+    public void OpenInputStringOneCurrectButtonWindow(string tip,Action<string> _correctButton, Action _filterCallBack = null)
     {
         InputStringWindowPopup sp = OpenPopup
         (Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "InputStringWindowPopup"), _filterCallBack)
         .GetComponent<InputStringWindowPopup>();
         sp.ReturnList += _correctButton;
-        sp.Init("請輸入群組名稱");
+        sp.Init(tip);
 
 
     }
@@ -105,6 +108,15 @@ public class PopupManager : InstanceScript<PopupManager>
         Destroy(sp.transform.parent.gameObject, 2);
 
     }
+
+    public void OpenEstablishWordPopup(Action<WordData> _correctButton,int wordCardNum, Action _filterCallBack = null){//創建單字視窗
+
+        CreateWordPopup sp=OpenPopup(Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "CreateWordPopup"),_filterCallBack)
+        .GetComponent<CreateWordPopup>();
+        sp.Init(wordCardNum,_correctButton,ClosePopup);
+
+    }
+
 
     public IEnumerator OpenLoading()
     {
@@ -146,6 +158,14 @@ public class PopupManager : InstanceScript<PopupManager>
 
     }
 
+    public IEnumerator ShowShield(){//展示屏蔽螢幕  小換場用(如:關閉小視窗等)
+    yield return null;
+    }
+
+    public IEnumerator CloseShield(){//展示屏蔽螢幕  小換場用(如:關閉小視窗等)
+    yield return null;
+    }
+
     //Loading畫面
     //擋住不讓玩家操作透明遮罩
 
@@ -159,8 +179,7 @@ public class PopupManager : InstanceScript<PopupManager>
     public void ClosePopup(GameObject filter)
     {
         int filterNum = filter.GetComponent<FilterScript>().FilterNum;
-        Destroy(PopupList[filterNum]);
-        PopupList.Remove(filterNum);
+        ClosePopup(filterNum);
     }
 
 

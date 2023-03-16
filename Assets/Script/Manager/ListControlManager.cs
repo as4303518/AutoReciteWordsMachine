@@ -5,17 +5,16 @@ using UnityEngine.UI;
 using DG.Tweening;
 
 
-public class ListControlManager : InstanceScript<ListControlManager>
+public class ListControlManager : PrefabScene
 {
-    public GameObject MainScene;
     [SerializeField]
     private List<ListCard> CardList = new List<ListCard>();
     [SerializeField]
     private List<ListCard> DeleteCardList = new List<ListCard>();
 
-    private eListControlModel ControlModel;
+    private ManagerStatus ControlModel;
 
-    public GameObject gViewPanel;
+    public GameObject gViewPanel;//字卡陣列母物件
     [Header("ButtonUI")]
     public Button ButtonDelete;
     public Button ButtonCreateList;
@@ -29,19 +28,21 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
     private void Awake()
     {
-        MonoScript();
-        ControlModel = eListControlModel.Normal;
+        //MonoScript();
+        ControlModel = ManagerStatus.Normal;
     }
 
-    public void Start()
-    {
-        StartCoroutine(Init());
-    }
+    // public void Start()
+    // {
+    //     StartCoroutine(Init());
+    // }
 
-    public IEnumerator Init()
+    public override IEnumerator Init(BaseData baseData)
     {
+
         CreateListOfSaveData();
-        yield return PageTweenIn();
+        yield return null;
+       // yield return PageTweenIn();
     }
 
 
@@ -61,7 +62,7 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
     private void CreateListOfSaveData()//從savedata新增單字組
     {
-
+        Debug.Log("印製字卡"+DataManager.Instance.saveData.myLists.Count);
         foreach (KeyValuePair<int, WordListData> Dic in DataManager.Instance.saveData.myLists)
         {
             GameObject sp = Instantiate(gListObject);
@@ -76,12 +77,9 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
     private ListCard.ListCardFunc CreateListCardFunc()//將控制中央面板的方法，覆值在每個cardList上
     {
-
         ListCard.ListCardFunc func = new ListCard.ListCardFunc(
                 AddToDeleteCardList,
-                RemoveToDeleteCardList,
-                PageTweenOut,
-                PageTweenIn
+                RemoveToDeleteCardList
         );
         return func;
     }
@@ -90,7 +88,7 @@ public class ListControlManager : InstanceScript<ListControlManager>
     public void ClickNewListButton()//開啟取名字的視窗
     {
         CancelDeleteModel();
-        PopupManager.Instance.OpenInputStringOneCurrectButtonWindow(CreateListObject);
+        PopupManager.Instance.OpenInputStringOneCurrectButtonWindow("請輸入群組名稱",CreateListObject);
     }
 
     private bool LiftMenuAni = false;
@@ -119,17 +117,17 @@ public class ListControlManager : InstanceScript<ListControlManager>
     {
         switch (ControlModel)
         {
-            case eListControlModel.Invalid:
+            case ManagerStatus.Invalid:
                 break;
-            case eListControlModel.Normal:
+            case ManagerStatus.Normal:
                 ButtonDelete.GetComponent<Image>().color = Color.red;
-                ControlModel = eListControlModel.Delete;
+                ControlModel = ManagerStatus.Delete;
                 DeleteCardList.Clear();
                 CardList.ForEach(v => { v.OpenDeleteModel(); });
                 break;
-            case eListControlModel.Delete:
+            case ManagerStatus.Delete:
                 ButtonDelete.GetComponent<Image>().color = Color.black;
-                ControlModel = eListControlModel.Normal;
+                ControlModel = ManagerStatus.Normal;
                 RemoveCardListDatafoAll();
                 //刪除那些被移除的list並從新整理Datamanager
                 DeleteCardList.Clear();
@@ -144,7 +142,7 @@ public class ListControlManager : InstanceScript<ListControlManager>
         // DeleteCardList.ForEach(v => { v.ToggleChooseDelete.isOn = false; });
 
         ButtonDelete.GetComponent<Image>().color = Color.black;
-        ControlModel = eListControlModel.Normal;
+        ControlModel = ManagerStatus.Normal;
         CardList.ForEach(v =>
         {
             v.CloseDeleteModel();
@@ -175,19 +173,19 @@ public class ListControlManager : InstanceScript<ListControlManager>
         DeleteCardList.Remove(_listCard);
     }
 
-    public IEnumerator PageTweenOut()
+    public override IEnumerator PageTweenOut()
     {//轉場去其他頁面
-        Debug.Log("離去單字組");
+        Debug.Log("離去單字組列表");
         yield return PopupManager.Instance.OpenLoading();
-        yield return TweenAniManager.TransparentOutGroup(MainScene);
-
+        yield return TweenAniManager.TransparentOutGroup(transform.gameObject);
+        //Destroy(this.gameObject);
     }
 
-    public IEnumerator PageTweenIn()
+    public override IEnumerator PageTweenIn()
     {//轉場去其他頁面
-        Debug.Log("進入單字組");
-        yield return TweenAniManager.TransparentInGroup(MainScene);
-        PopupManager.Instance.CloseLoading();
+        Debug.Log("進入單字組列表");
+        yield return TweenAniManager.TransparentInGroup(transform.gameObject);
+        yield return PopupManager.Instance.CloseLoading();
 
     }
 
@@ -197,10 +195,11 @@ public class ListControlManager : InstanceScript<ListControlManager>
 
 }
 
-enum eListControlModel
-{
-    Invalid,//切換場景的過場無法使用功能
-    Normal,//切換場景的過場
-    Delete,//刪除模式，可以刪除list
+// enum eListControlModel
+// {
+//     Invalid,//切換場景的過場無法使用功能
+//     Normal,//切換場景的過場
+//     Delete,//刪除模式，可以刪除list
+//     Drop//拖曳字卡
 
-}
+// }

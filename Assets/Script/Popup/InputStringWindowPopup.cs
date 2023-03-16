@@ -21,6 +21,7 @@ public class InputStringWindowPopup : MonoBehaviour
     {
 
         mTitle.text = _title;
+        
 
     }
 

@@ -9,24 +9,46 @@ public abstract class InstanceScript<T> : MonoBehaviour where T : MonoBehaviour,
     public static T Instance = null;
 
 
+    public string ShowGameObjectName()
+    {
+        Debug.Log(typeof(T).Name);
+        return this.gameObject.name;
+    }
 
     public void MonoScript()
     {
         if (Instance == null)
         {
-            Instance = transform.GetComponent<T>();
+            Debug.Log("實例是空");
+            Instance = this as T;
         }
         else
         {
+            Debug.Log("實力是有"+Instance.gameObject.name);
             Destroy(this);
         }
 
     }
 
-    public void DontDestoryThis()
+    public IEnumerator DontDestoryThis()//不能刪除的要在MonoScript初始化,通常dontdestory的組件都在一開始就加載好
     {
         MonoScript();
-        DontDestroyOnLoad(Instance);
+        yield return Init();
+
+        DontDestroyOnLoad(Instance.transform.root);
+
     }
 
+    public virtual IEnumerator Init()
+    {
+        yield return null;
+    }
+
+
 }
+
+
+
+
+
+

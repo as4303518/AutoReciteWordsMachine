@@ -4,6 +4,6 @@ using UnityEngine;
 
 public class ResourcesPath 
 {
- public static readonly string PrefabPath="";
+ public static readonly string PrefabScenePath="Prefabs/Scene/";
 public static readonly string PopupWindowPath="Prefabs/Popup/";
 }

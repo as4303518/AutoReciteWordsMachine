@@ -42,6 +42,7 @@ public class ListCard : MonoBehaviour
         mFunc = _func;
 
     }
+    
 
     public void OnToggleChooseDelete()//刪除模式
     {
@@ -69,21 +70,30 @@ public class ListCard : MonoBehaviour
 
     public void ClickContentButton()
     {
-        StartCoroutine(IEContentButton());
+        IEContentButton();
         //按鈕不可再按
 
     }
 
-    public IEnumerator IEContentButton()
-    {
-        yield return PopupManager.Instance.OpenLoading();
-        yield return mFunc._CloseList();
-        Debug.Log("進入場景" + aData.mTitle);
-        yield return new WaitForSeconds(2);
-        yield return mFunc._OpenList();
-        yield return PopupManager.Instance.CloseLoading();
-        Debug.Log("已過兩秒");
+    // public IEnumerator IEContentButton()//模擬轉場
+    // {
+    //     // yield return SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData);
+    //     // yield return PopupManager.Instance.OpenLoading();
+    //     // yield return mFunc._CloseList();
+    //     // Debug.Log("進入場景" + aData.mTitle);
+    //     // yield return new WaitForSeconds(2);
+    //     // yield return mFunc._OpenList();
+    //     // yield return PopupManager.Instance.CloseLoading();
+    //     // Debug.Log("已過兩秒");
+    //     yield return SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData);
+    //     StartCoroutine(SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData));
+    // }
 
+    public void IEContentButton()//模擬轉場
+    {
+
+        // StartCoroutine(SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData));
+        SceneManager.Instance.StartChangScene(SceneManager.SceneType.WordControlManager,aData);
     }
 
 
@@ -157,7 +167,7 @@ public class ListCard : MonoBehaviour
 
     }
 
-    private void RefreshContentSizeFitter()
+    private void RefreshContentSizeFitter()//刷新Content filter(改變母物件大小)
     {
         transform.parent.GetComponent<ContentSizeFitter>().enabled = false;
         transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
@@ -165,23 +175,20 @@ public class ListCard : MonoBehaviour
     }
 
 
-    public class ListCardFunc
+    sealed public class ListCardFunc
     {//調用單字列表的其他腳本func
 
         public Action<ListCard> _AddDeleteFunc;
         public Action<ListCard> _RemoveDeleteFunc;
-        public Func<IEnumerator> _CloseList;//關閉單字組列表  單字組列表-->單字列表
 
-        public Func<IEnumerator> _OpenList;//關閉單字組列表  單字組列表-->單字列表
 
-        public ListCardFunc(Action<ListCard> addDeleteFunc, Action<ListCard> removeDeleteFunc, Func<IEnumerator> closeList,Func<IEnumerator> openList)
+        public ListCardFunc(Action<ListCard> addDeleteFunc, Action<ListCard> removeDeleteFunc)
         {
 
             _AddDeleteFunc = addDeleteFunc;
-            _RemoveDeleteFunc = removeDeleteFunc;
-            _CloseList = closeList;
 
-            _OpenList=openList;
+            _RemoveDeleteFunc = removeDeleteFunc;
+
 
         }
 
