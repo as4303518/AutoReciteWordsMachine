@@ -17,7 +17,7 @@ public class WordListData : BaseData
 
     public int mListNum;//list編號
 
-    public int wordCardAllCount = 0;
+    public int wordCardAllCount = 0;//單字量編號 唯一識別碼
     public List<WordData> mWords = new List<WordData>() { };//裡面擁有的單字
 
 

@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 
 
-public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
+public class ListControlManager : InstanceScript<ListControlManager>, PrefabScene
 {
     [SerializeField]
     private List<ListCard> CardList = new List<ListCard>();
@@ -23,33 +23,38 @@ public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
     public Button isFinishWordButton;
     public Button Setting;
 
-        public Button ButtonBack;
+    public Button ButtonBack;
+
+    public Button LeftMenuButton;
+
+    public GameObject BelowMenu;//左邊的選單列表
+
+    [Header("Prefabs")]
     public GameObject gListObject;
 
-    public GameObject LiftMenu;//左邊的選單列表
 
 
 
-    private void Awake()
+
+    public IEnumerator Init(BaseData baseData)
     {
-        //MonoScript();
         ControlModel = ManagerStatus.Normal;
+        CreateListOfSaveData();
+        ButtonSetting();
+        yield return null;
+        // yield return PageTweenIn();
     }
 
-    // public void Start()
-    // {
-    //     StartCoroutine(Init());
-    // }
 
-    public  IEnumerator Init(BaseData baseData)
+
+    private void ButtonSetting()
     {
 
-        CreateListOfSaveData();
-        yield return null;
-       // yield return PageTweenIn();
+        ButtonCreateList.onClick.AddListener(ClickNewListButton);
+        LeftMenuButton.onClick.AddListener(ClickLiftMenuButton);
+
+
     }
-
-
 
     private void CreateListObject(string _title)//新增單字組
     {
@@ -66,7 +71,7 @@ public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
 
     private void CreateListOfSaveData()//從savedata新增單字組
     {
-        Debug.Log("印製字卡"+DataManager.Instance.saveData.myLists.Count);
+
         foreach (KeyValuePair<int, WordListData> Dic in DataManager.Instance.saveData.myLists)
         {
             GameObject sp = Instantiate(gListObject);
@@ -89,28 +94,45 @@ public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
     }
 
 
-    public void ClickNewListButton()//開啟取名字的視窗
+    public void ClickNewListButton()//開啟單字組陣列取名字的視窗
     {
         CancelDeleteModel();
-        PopupManager.Instance.OpenInputStringOneCurrectButtonWindow("請輸入群組名稱",CreateListObject);
+        if (BelowMenuExpand)
+        {//如果左側選單是開的，但已經按下功能按鈕，則關閉選單
+            ClickLiftMenuButton();
+        }
+        StartCoroutine(PopupManager.Instance.OpenInputStringOneCurrectButtonWindow("請輸入群組名稱", CreateListObject));
     }
 
-    private bool LiftMenuAni = false;
-    private bool LiftMenuExpand = false;
+    private bool BelowMenuAni = false;
+    private bool BelowMenuExpand = false;
 
     public void ClickLiftMenuButton()//點擊選單列表
     {
-        if (LiftMenuAni) return;
+        StartCoroutine(ToggleLeftMenu());
 
-        if (LiftMenuExpand)
+    }
+
+    private IEnumerator ToggleLeftMenu()
+    {
+
+        if (BelowMenuAni) yield break;
+        BelowMenuAni = true;
+
+        if (BelowMenuExpand)
         {
-            LiftMenu.transform.DOLocalMoveX(0, 0.3f);
-            LiftMenuExpand = false;
+
+            BelowMenuExpand = false;
+            yield return BelowMenu.transform.DOLocalMoveY(-1110, 0.2f).WaitForCompletion();
+            BelowMenuAni = false;
+
         }
         else
         {
-            LiftMenu.transform.DOLocalMoveX(670, 0.3f);
-            LiftMenuExpand = true;
+            BelowMenuExpand = true;
+            yield return BelowMenu.transform.DOLocalMoveY(-810, 0.2f).WaitForCompletion();
+            BelowMenuAni = false;
+
         }
 
     }
@@ -124,13 +146,15 @@ public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
             case ManagerStatus.Invalid:
                 break;
             case ManagerStatus.Normal:
-                ButtonDelete.GetComponent<Image>().color = Color.red;
+                StartCoroutine(TweenAniManager.ColorOrTransparentChange(ButtonDelete.GetComponent<Image>(), Color.red));
+                //ButtonDelete.GetComponent<Image>().color = Color.red;
                 ControlModel = ManagerStatus.Delete;
                 DeleteCardList.Clear();
                 CardList.ForEach(v => { v.OpenDeleteModel(); });
                 break;
             case ManagerStatus.Delete:
-                ButtonDelete.GetComponent<Image>().color = Color.black;
+                StartCoroutine(TweenAniManager.ColorOrTransparentChange(ButtonDelete.GetComponent<Image>(), Color.black));
+                // ButtonDelete.GetComponent<Image>().color = Color.black;
                 ControlModel = ManagerStatus.Normal;
                 RemoveCardListDatafoAll();
                 //刪除那些被移除的list並從新整理Datamanager
@@ -177,7 +201,7 @@ public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
         DeleteCardList.Remove(_listCard);
     }
 
-    public  IEnumerator PageTweenOut()
+    public IEnumerator PageTweenOut()
     {//轉場去其他頁面
         Debug.Log("離去單字組列表");
         yield return PopupManager.Instance.OpenLoading();
@@ -185,7 +209,7 @@ public class ListControlManager : InstanceScript<ListControlManager>,PrefabScene
         //Destroy(this.gameObject);
     }
 
-    public  IEnumerator PageTweenIn()
+    public IEnumerator PageTweenIn()
     {//轉場去其他頁面
         Debug.Log("進入單字組列表");
         yield return TweenAniManager.TransparentInGroup(transform.gameObject);

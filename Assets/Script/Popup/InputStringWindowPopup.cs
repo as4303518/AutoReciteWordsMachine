@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using UnityEngine.Events;
 using System;
 
-public class InputStringWindowPopup : MonoBehaviour
+public class InputStringWindowPopup : PopupWindow
 {
 
     public Text mInputString;
@@ -17,9 +17,9 @@ public class InputStringWindowPopup : MonoBehaviour
 
     public Text mTitle;
 
-    public void Init(string _title)
+    public  void Init(string _title)
     {
-
+        
         mTitle.text = _title;
         
 
@@ -29,12 +29,13 @@ public class InputStringWindowPopup : MonoBehaviour
     {
         if (DataManager.Instance.saveData.CheckListTitleRepeat(mInputString.text))
         {
-            PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!","不適用或重複的標題的名字");
+           StartCoroutine( PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!","不適用或重複的標題的名字"));
         }
         else
         {
             ReturnList(mInputString.text);
-            transform.parent.GetComponent<FilterScript>().CloseFilter();
+            // transform.parent.GetComponent<FilterScript>().CloseFilter();
+            mParentFilter.CloseFilter();
         }
 
 

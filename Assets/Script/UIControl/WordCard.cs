@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 using UnityEngine.Events;
+using DG.Tweening;
 
 public class WordCard : MonoBehaviour
 {
@@ -69,18 +70,25 @@ public class WordCard : MonoBehaviour
 
     }
 
+    private bool Ani = false;
     public void ChoseDeleteThisCard(bool isOn)
     {
+        if (Ani)
+        {
+            Debug.Log("正在動畫中，無法回調");
+            return;
+        }
+        Ani = true;
         if (isOn)
         {
             //切換成紅色代表以選
             mFunc.AddToControlTempList(this);
-            DeleteToggle.GetComponent<Image>().color = Color.red;
+            StartCoroutine(TweenAniManager.ColorOrTransparentChange(DeleteToggle.GetComponent<Image>(), Color.red, () => {Debug.Log("已完成紅色框"); Ani = false; }));
         }
         else
         {
             mFunc.RemoveToControlTempList(this);
-            DeleteToggle.GetComponent<Image>().color = Color.gray;
+            StartCoroutine(TweenAniManager.ColorOrTransparentChange(DeleteToggle.GetComponent<Image>(), Color.gray, () => { Ani = false; }));
         }
     }
     public void OpenDeleteModel()//字卡開啟刪除模式
@@ -88,15 +96,24 @@ public class WordCard : MonoBehaviour
         DeleteToggle.gameObject.SetActive(true);
         wordInfoButton.gameObject.SetActive(false);
         DeleteToggle.GetComponent<Image>().color = Color.gray;
+        StautsRepeat();
 
 
     }
     public void CloseDeleteModel()//字卡關閉刪除模式
     {
+        
         DeleteToggle.gameObject.SetActive(false);
         wordInfoButton.gameObject.SetActive(true);
+        DeleteToggle.GetComponent<Image>().color = Color.gray;
+        StautsRepeat();
     }
 
+    private void StautsRepeat()
+    {//狀態重製
+        Ani = false;
+        DeleteToggle.transform.DOKill();
+    }
 
     sealed public class WordCardFunc
     {

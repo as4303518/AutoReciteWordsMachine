@@ -36,7 +36,6 @@ public class DataManager : InstanceScript<DataManager>
         Debug.Log("讀取");
         if (PlayerPrefs.GetString("SaveData") != "")
         {
-
             DataManager.Instance.saveData = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString("SaveData"));
             saveData.SetJsonListToDic();
 
@@ -55,6 +54,8 @@ public class DataManager : InstanceScript<DataManager>
     {
         [SerializeField] private int ListCount = 0;
         private int LearnWordCount = 0;
+
+        public Language MySettingLanguage;
 
         public Dictionary<int, WordListData> myLists = new Dictionary<int, WordListData>();
 
