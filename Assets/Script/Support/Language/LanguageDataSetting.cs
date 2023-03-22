@@ -20,6 +20,7 @@ public class LanguageDataSetting : EditorWindow
     private static string _FileName = "{0}.json";
 
     /////////////
+    private SerializedObject main;
     private SerializedProperty Sp;
     private Vector2 ScrollView = Vector2.zero;
 
@@ -32,18 +33,22 @@ public class LanguageDataSetting : EditorWindow
 
 
     }
+
+    private void OnEnable(){
+         main = new SerializedObject(this);
+         Sp = main.FindProperty("SaveData");
+    }
     void OnGUI()
     {
-        SerializedObject main = new SerializedObject(this);
-        Sp = main.FindProperty("SaveData");
-        MyLanguage=(Language)EditorGUILayout.EnumPopup(MyLanguage);
+        main.Update();
+        MyLanguage = (Language)EditorGUILayout.EnumPopup(MyLanguage);
 
         ScrollView = GUILayout.BeginScrollView(ScrollView);
 
         //EditorGUILayout.ObjectField("", SaveData.GetType());
-
+        
         EditorGUILayout.PropertyField(Sp);
-        main.ApplyModifiedProperties();
+        // main.ApplyModifiedProperties();
         GUILayout.EndScrollView();
 
 
@@ -51,25 +56,26 @@ public class LanguageDataSetting : EditorWindow
         {
             Debug.Log("完全覆寫");
             SetJsonToPath();
-
         }
+
         GUILayout.Space(10);
+
         if (GUILayout.Button("overrideTest"))
         {
             Debug.Log("覆寫有的參數");
             ReviseJsonFile();
-
         }
 
         GUILayout.Space(10);
+
         if (GUILayout.Button("ReadTest"))
         {
             Debug.Log("讀取有的檔案");
             OverrideSaveDataOfJson();
-
         }
-
-
+        
+        main.ApplyModifiedProperties();
+        //SceneView.RepaintAll();
 
     }
 
