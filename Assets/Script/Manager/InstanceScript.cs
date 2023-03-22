@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using System;
 
-public abstract class InstanceScript<T> : MonoBehaviour,InstanceFunc where T :MonoBehaviour, new()
+public abstract class InstanceScript<T> : MonoBehaviour,InstanceFunc where T :MonoBehaviour
 {
     // Start is called before the first frame update
 

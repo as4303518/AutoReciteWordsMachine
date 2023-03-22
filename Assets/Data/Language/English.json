@@ -1,1 +1,1 @@
-{"MyText":[{"label":0,"TransTaleText":"Back"},{"label":1,"TransTaleText":"START"},{"label":2,"TransTaleText":"Loading"}]}
+{"MyText":[{"label":"Back","TransTaleText":"11"},{"label":"Start","TransTaleText":"12"},{"label":"Loading","TransTaleText":"13"},{"label":"SureCloseWindowTitle","TransTaleText":"14"},{"label":"SureCloseWindowTip","TransTaleText":"15"},{"label":"Ok","TransTaleText":"16"},{"label":"GameOver","TransTaleText":"17"},{"label":"GameStart","TransTaleText":"18"}]}

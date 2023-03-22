@@ -10,9 +10,9 @@ using UnityEngine.UI;
 public class LanguageTranstale : InstanceScript<LanguageTranstale>
 {
 
-    public Language MyLanguage = Language.Chinese;
+    public Language MyLanguage = Language.Chinese;//1.根據這裡的國籍
 
-    public LanguageSave mLanguageSaveData = new LanguageSave();
+    public LanguageSave mLanguageSaveData = new LanguageSave();//2.放置對應資料進這個儲存格
 
     private string _Path = "/Data/Language/{0}.json";
 
@@ -22,7 +22,6 @@ public class LanguageTranstale : InstanceScript<LanguageTranstale>
     {
         GetTextList();
         yield return null;
-
     }
 
     private void GetTextList()
@@ -47,14 +46,21 @@ public class LanguageTranstale : InstanceScript<LanguageTranstale>
 
     public string GetStr(MyLabel label)//顯示當下翻譯對應的文字
     {
-        IEnumerable<LanguageData> data=mLanguageSaveData.MyText.Where(v => v.label == label);
-        if(data.Any(v=>v.label==label)){
-            return data.FirstOrDefault().TransTaleText;
-        }else{
-            Debug.Log("在"+MyLanguage+"的翻譯下無"+label+"的翻譯文字");
+        LanguageData data = mLanguageSaveData.MyText.Where(v => v.label == label.ToString()).FirstOrDefault();
+
+        if (data.label == label.ToString())
+        {
+            return data.TransTaleText;
+        }
+        else
+        {
+            Debug.Log("在" + MyLanguage + "的翻譯下無" + label + "的翻譯文字");
             return "";
         }
 
+    }
+    public string GetNation(){//返回語言種類名稱
+        return MyLanguage.ToString();
     }
 
 }
@@ -63,8 +69,10 @@ public enum MyLabel     //紀錄每個語言切換的關鍵字
 {
     Back,
     Start,
-    Loading,
+     Loading,
     SureCloseWindowTitle,
     SureCloseWindowTip,
-
+    Ok,
+    GameOver,
+    GameStart,
 }

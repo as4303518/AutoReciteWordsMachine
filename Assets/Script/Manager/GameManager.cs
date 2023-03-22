@@ -29,7 +29,7 @@ public class GameManager : InstanceScript<GameManager>
     // Update is called once per frame
 
 
-    private IEnumerator BindManager<T>(string _managerGameName = "") where T : InstanceScript<T>, new()
+    private IEnumerator BindManager<T>(string _managerGameName = "") where T : InstanceScript<T>
     {
         if (_managerGameName == "")//如果沒特別取名,則名字是class的名字
         {

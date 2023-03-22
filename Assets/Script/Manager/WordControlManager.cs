@@ -146,7 +146,8 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
      //  PopupManager.Instance.OpenTipTwoOptionsButtonWindow("確定要關閉視窗?", "您確定要放棄當前編輯的單字嗎?",
 
         StartCoroutine(PopupManager.Instance.OpenTipTwoOptionsButtonWindow(
-        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle),
+         LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle),
+        // LanguageTranstale.Instance.GetStr(MyLabel.Back),
         LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTip),
         PopupManager.Instance.CloseAllPopup,
         PopupManager.Instance.ClosePopup
@@ -266,6 +267,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     private void ClickBelowButtonGroup()
     {
         StartCoroutine(clickBelowButtonGroup());
+        //loading.text= LanguageTranstale.Instance.GetStr(MyLabel.Loading);
 
     }
     private bool Expand = false;
