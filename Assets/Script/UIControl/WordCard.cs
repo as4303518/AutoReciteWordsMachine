@@ -21,6 +21,10 @@ public class WordCard : MonoBehaviour
 
     [Header("Default")]
 
+    public GameObject mTriggerEventAera;
+
+    private Vector2 mTriggerEventAeraDefaultSize = new Vector2(880, 500);
+
     // //單字顯示實體腳本
     // private string wordText;
     // private string translate;
@@ -34,12 +38,12 @@ public class WordCard : MonoBehaviour
 
     public void Init(WordData _wordCard, WordCardFunc _func)//mNm 非單字編號,比較像是單字順序固定1~50,非辨識用
     {
+
         aData = _wordCard;
         mFunc = _func;
-
+        SetTagChoose();
         UIUpdate(mFunc.mNum);
-        mTagDropdowm.onValueChanged.AddListener(ClickTag);
-        DeleteToggle.onValueChanged.AddListener(ChoseDeleteThisCard);
+        SetButtonSetting();
     }
     private void UIUpdate(int mNum)
     {
@@ -47,21 +51,50 @@ public class WordCard : MonoBehaviour
         WordText.text = aData.wordText;
         TransTaleText.text = aData.translate;
         SentenceText.text = "例句:" + aData.sentenceContext;
-
+        bool isHaveTag = false;
         for (int i = 0; i < mTagDropdowm.options.Count; i++)
         {//更新tag至data的tag
             if (mTagDropdowm.options[i].text == aData.mTag)
             {
                 mTagDropdowm.value = i;
+                isHaveTag = true;
             }
         }
+        if (!isHaveTag)
+        {//未找到對應標籤(可能是被刪除了)
+            mTagDropdowm.value = 0;
+            aData.mTag=mTagDropdowm.options[0].text;
+        }
+    }
+
+    private void SetButtonSetting()
+    {
+        mTriggerEventAera.GetComponent<RectTransform>().sizeDelta = mTriggerEventAeraDefaultSize;
+        mTagDropdowm.onValueChanged.AddListener(ClickTag);
+        // DeleteToggle.onValueChanged.AddListener(ChoseDeleteThisCard);
+
+    }
+
+    private void SetTagChoose()
+    {
+
+        DataManager.Instance.saveData.Classification.ForEach(str =>
+        {
+            mTagDropdowm.options.Add(new Dropdown.OptionData(str));
+        });
     }
 
     public void ClickTag(int a)//更換標籤
     {//切換標籤
         aData.mTag = mTagDropdowm.options[a].text;
+
         //mTag.options.Add()
         Debug.Log("以切換" + aData.wordText + "文字標籤至" + aData.mTag);
+    }
+
+    public void ReSetNumList()
+    {
+        mNumber.text = "No." + (transform.GetSiblingIndex()+1);//mnum是字卡順序，非唯一識別編號
     }
     public void ClickInfoButton()//開啟字卡詳細資訊
     {
@@ -70,8 +103,25 @@ public class WordCard : MonoBehaviour
 
     }
 
+
+    public void IsDragButtonEffect(bool isDrag)//增加判定範圍
+    {
+
+        RectTransform mTri = mTriggerEventAera.GetComponent<RectTransform>();
+
+        if (isDrag)
+        {
+            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(880, 500);
+        }
+        else
+        {
+            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(880, 450);
+        }
+    }
+
+
     private bool Ani = false;
-    public void ChoseDeleteThisCard(bool isOn)
+    public void ChoseDeleteThisCard()
     {
         if (Ani)
         {
@@ -79,18 +129,22 @@ public class WordCard : MonoBehaviour
             return;
         }
         Ani = true;
-        if (isOn)
+
+        if (!DeleteToggle.isOn)
         {
             //切換成紅色代表以選
+            DeleteToggle.isOn = true;
             mFunc.AddToControlTempList(this);
-            StartCoroutine(TweenAniManager.ColorOrTransparentChange(DeleteToggle.GetComponent<Image>(), Color.red, () => {Debug.Log("已完成紅色框"); Ani = false; }));
+            StartCoroutine(TweenAniManager.ColorOrTransparentChange(DeleteToggle.GetComponent<Image>(), Color.red, () => { Debug.Log("已完成紅色框"); Ani = false; }));
         }
         else
         {
+            DeleteToggle.isOn = false;
             mFunc.RemoveToControlTempList(this);
             StartCoroutine(TweenAniManager.ColorOrTransparentChange(DeleteToggle.GetComponent<Image>(), Color.gray, () => { Ani = false; }));
         }
     }
+
     public void OpenDeleteModel()//字卡開啟刪除模式
     {
         DeleteToggle.gameObject.SetActive(true);
@@ -102,7 +156,7 @@ public class WordCard : MonoBehaviour
     }
     public void CloseDeleteModel()//字卡關閉刪除模式
     {
-        
+
         DeleteToggle.gameObject.SetActive(false);
         wordInfoButton.gameObject.SetActive(true);
         DeleteToggle.GetComponent<Image>().color = Color.gray;

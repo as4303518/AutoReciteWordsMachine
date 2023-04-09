@@ -21,7 +21,7 @@ public class SceneManager : InstanceScript<SceneManager>
     public GameObject test = null;
 
     // private Dictionary<SceneType, GameObject> mSceneList = new Dictionary<SceneType,GameObject>();
-    private GameObject CurScene=null;
+    private GameObject CurScene = null;
     [SerializeField] private List<SceneType> mSceneSquence = new List<SceneType>();//儲存經過的場景
 
     private Dictionary<SceneType, string> ScenePathOfResources = new Dictionary<SceneType, string>(){
@@ -43,7 +43,7 @@ public class SceneManager : InstanceScript<SceneManager>
 
     }
 
-    
+
 
 
     public IEnumerator ChangeScene(SceneType goToScene, BaseData _data = null)
@@ -54,17 +54,22 @@ public class SceneManager : InstanceScript<SceneManager>
         }
         yield return PopupManager.Instance.OpenLoading();
 
-        
+
 
         test = Resources.Load<GameObject>(ScenePathOfResources[SceneType.WordControlManager]);
 
         yield return CurScene == null ? null : CurScene.GetComponent<PrefabScene>().PageTweenOut();
+
         Destroy(CurScene);
-        ResourceRequest rq = Resources.LoadAsync<GameObject>(ScenePathOfResources[goToScene]);
+
+        ResourceRequest rq = Resources.LoadAsync<GameObject>( ScenePathOfResources[goToScene] );
+
         yield return new WaitUntil(() => rq.isDone);
+
         GameObject scene = Instantiate(rq.asset, SceneParent.transform) as GameObject;
 
         CanvasGroup Cg;
+
         if (scene.GetComponent<CanvasGroup>() == null)
         {
             Cg = scene.AddComponent<CanvasGroup>();
@@ -76,13 +81,18 @@ public class SceneManager : InstanceScript<SceneManager>
 
         Cg.alpha = 0f;
         PrefabScene preScene = scene.GetComponent<PrefabScene>();
-    
-        
+
+
         scene.GetComponent<InstanceFunc>().MonoScript();
-        CurScene=scene;
+
+        CurScene = scene;
+        
         mSceneSquence.Add(goToScene);
 
-
+        // if (_data != null && _data.GetType() == typeof(WordListData))
+        // {
+        //     Debug.Log("裡面的物件" + (_data as WordListData).mWords.Count);
+        // }
         yield return preScene.Init(_data);
 
         yield return preScene.PageTweenIn();
@@ -113,7 +123,7 @@ public class SceneManager : InstanceScript<SceneManager>
 
     public GameObject GetNowScenePrefabs()
     {
-        return CurScene ;
+        return CurScene;
     }
 
     public enum SceneType

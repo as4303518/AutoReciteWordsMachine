@@ -25,7 +25,7 @@ public class DataManager : InstanceScript<DataManager>
     {
         Debug.Log("儲存");
 
-        saveData.SetDicDataToList();
+        // saveData.SetDicDataToList();
 
         PlayerPrefs.SetString("SaveData", JsonUtility.ToJson(DataManager.Instance.saveData));
 
@@ -37,7 +37,7 @@ public class DataManager : InstanceScript<DataManager>
         if (PlayerPrefs.GetString("SaveData") != "")
         {
             DataManager.Instance.saveData = JsonUtility.FromJson<SaveData>(PlayerPrefs.GetString("SaveData"));
-            saveData.SetJsonListToDic();
+            //saveData.SetJsonListToDic();
 
         }
 
@@ -57,10 +57,12 @@ public class DataManager : InstanceScript<DataManager>
 
         public Language MySettingLanguage;
 
-        public Dictionary<int, WordListData> myLists = new Dictionary<int, WordListData>();
+        public List<string> Classification=new List<string>(){"Non"};//標籤種類
 
-        public List<int> DicKey = new List<int>();
-        public List<WordListData> DicValue = new List<WordListData>();
+        public List<WordListData> myLists = new List<WordListData>();
+
+        // public List<int> DicKey = new List<int>();
+        // public List<WordListData> DicValue = new List<WordListData>();
 
         //public List<WordListData> myList = new List<WordListData>();
         //接著要做顯示，顯示之前儲存的資料,這樣就可以做到刪除與顯示正確
@@ -68,11 +70,13 @@ public class DataManager : InstanceScript<DataManager>
         {
 
 
-            myLists.Add(ListCount, new WordListData(_title, ListCount));
+            myLists.Add(new WordListData(_title, ListCount));
             ListCount++;
 
-            return myLists[ListCount - 1];
+            return myLists[myLists.Count - 1];
         }
+
+        
 
         public bool CheckListTitleRepeat(string InPutTitle)//檢查單字陣列是否有問題
         {
@@ -83,9 +87,9 @@ public class DataManager : InstanceScript<DataManager>
             }
 
 
-            foreach (var Dic in myLists)
+            foreach (var wld in myLists)
             {
-                if (InPutTitle == Dic.Value.mTitle)
+                if (InPutTitle == wld.mTitle)
                 {
                     Debug.Log("標題重複");
                     return true;
@@ -104,9 +108,9 @@ public class DataManager : InstanceScript<DataManager>
 
             List<string> myWords = new List<string>();
 
-            foreach (KeyValuePair<int, WordListData> dic in myLists)
+            foreach (WordListData wld in myLists)
             {
-                dic.Value.mWords.ForEach(v =>
+                wld.mWords.ForEach(v =>
                 {
                     myWords.Add(v.wordText);
                 });
@@ -123,40 +127,42 @@ public class DataManager : InstanceScript<DataManager>
             return false;
         }
 
-        public void SetListWordData(WordListData wld)//覆寫新的儲存
+        public void CoverListData(WordListData wld)
         {
-            Debug.Log("將編號" + wld.mListNum + "的檔案更新至新的儲存檔案");
-            myLists[wld.mListNum] = wld;
+            for(int i=0;i<myLists.Count;i++){
 
+                if(myLists[i].mListNum==wld.mListNum){
+                    myLists[i]=wld;
+                }
 
-        }
-
-
-        public void SetDicDataToList()//將dic的值分開key跟value儲存，這樣才能儲存進json
-        {
-            ClearSaveDataInSaveData();
-            DicKey = myLists.Keys.ToList();
-            DicValue = myLists.Values.ToList();
-            //ClearSaveDataInSaveData();
-
-        }
-        public void SetJsonListToDic()
-        {
-            int Count = 0;
-            foreach (int i in DicKey)
-            {
-                myLists.Add(i, DicValue[Count]);
-                Count++;
             }
-
         }
 
-        private void ClearSaveDataInSaveData()
-        {
-            DicKey.Clear();
-            DicValue.Clear();
+        // public void SetDicDataToList()//將dic的值分開key跟value儲存，這樣才能儲存進json
+        // {
+        //     ClearSaveDataInSaveData();
+        //     DicKey = myLists.Keys.ToList();
+        //     DicValue = myLists.Values.ToList();
+        //     //ClearSaveDataInSaveData();
 
-        }
+        // }
+        // public void SetJsonListToDic()
+        // {
+        //     int Count = 0;
+        //     foreach (int i in DicKey)
+        //     {
+        //         myLists.Add(i, DicValue[Count]);
+        //         Count++;
+        //     }
+
+        // }
+
+        // private void ClearSaveDataInSaveData()
+        // {
+        //     DicKey.Clear();
+        //     DicValue.Clear();
+
+        // }
 
 
     }

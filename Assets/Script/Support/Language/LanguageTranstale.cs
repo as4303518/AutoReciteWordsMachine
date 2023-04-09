@@ -69,9 +69,11 @@ public enum MyLabel     //紀錄每個語言切換的關鍵字
 {
     Back,
     Start,
-     Loading,
+    Loading,
     SureCloseWindowTitle,
-    SureCloseWindowTip,
+    SureCloseWindowTag,
+    SearchSortName,//根據名字搜尋
+    SearchSortTag,//根據標籤搜尋
     Ok,
     GameOver,
     GameStart,

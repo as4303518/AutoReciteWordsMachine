@@ -21,7 +21,7 @@ public class WordData :BaseData
 
     public string mFoundingTime { get; private set; }//創立時間
 
-    public WordData(string _context, string _translate,  int _wordNum, string _sentenceContext = "",string _mTag="")
+    public WordData(string _context, string _translate,  int _wordNum, string _sentenceContext = "",string _mTag="Non")
     {
         wordText = _context;
         translate = _translate;

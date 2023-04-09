@@ -3,13 +3,19 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
+using UnityEngine.EventSystems;
+using System.Linq;
 
 
 public class ListControlManager : InstanceScript<ListControlManager>, PrefabScene
 {
     [SerializeField]
-    private List<ListCard> CardList = new List<ListCard>();
+    private List<ListCard> CardList = new List<ListCard>();//字母卡陣列
+
     [SerializeField]
+    private List<ListCard> searchCardList = new List<ListCard>();//搜尋的字卡
+    [SerializeField]
+
     private List<ListCard> DeleteCardList = new List<ListCard>();
 
     private ManagerStatus ControlModel;
@@ -25,34 +31,217 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
 
     public Button ButtonBack;
 
-    public Button LeftMenuButton;
+    public Button BelowMenuButton;
+
+    public InputField SearchField;
 
     public GameObject BelowMenu;//左邊的選單列表
 
     [Header("Prefabs")]
     public GameObject gListObject;
 
+    /////BaseManager//////
+    [HideInInspector] public DragUI mDragManager;
 
-
-
+    private bool isDeteDragFunc = false;//偵測拖動中的方法是否有執行
 
     public IEnumerator Init(BaseData baseData)
     {
         ControlModel = ManagerStatus.Normal;
+        mDragManager = GetComponent<DragUI>();
+
         CreateListOfSaveData();
         ButtonSetting();
         yield return null;
         // yield return PageTweenIn();
     }
 
-
-
     private void ButtonSetting()
     {
 
         ButtonCreateList.onClick.AddListener(ClickNewListButton);
-        LeftMenuButton.onClick.AddListener(ClickLiftMenuButton);
+        BelowMenuButton.onClick.AddListener(ClickBelowMenuButton);
+        SearchField.onValueChanged.AddListener(SearchOfStr);
+        SetDragSettingEvent();
 
+
+    }
+
+    private void SearchOfStr(string str)//搜尋功能
+    {
+        Debug.Log("偵測搜尋==>" + str);
+
+        var tempList = CardList.Where(x => x.aData.mTitle.Contains(str));
+
+        CardList.ForEach(c =>
+        {
+            bool isHaveTemp = false;
+            foreach (var card in tempList)
+            {
+
+                if (c.aData.mTitle == card.aData.mTitle)
+                {
+
+                    c.gameObject.SetActive(true);
+                    isHaveTemp = true;
+
+                }
+            }
+            if (!isHaveTemp)
+            {
+                c.gameObject.SetActive(false);
+            }
+
+        });
+
+    }
+
+    public bool isDrag = false;
+    private void SetDragSettingEvent()
+    {
+        mDragManager.ClearEvent();//重製事件效果，以免其他按鈕拿到不屬於自己的事件
+
+        mDragManager.OnClickCallBack += obj =>
+        {
+
+            switch (ControlModel)
+            {
+
+                case ManagerStatus.Normal:
+
+                    if (isDrag == false) obj.transform.parent.GetComponent<ListCard>().ClickTitleButton();
+                    break;
+
+                case ManagerStatus.Delete:
+
+                    if (isDrag == false) obj.transform.parent.GetComponent<ListCard>().OnToggleChooseDelete();
+                    break;
+
+            }
+
+
+            isDrag = false;//不管有沒有拖曳，都結束
+        };
+
+        mDragManager.OnBeginDragCallBack += obj =>
+        {
+            isDrag = true;
+            SetCradTriggerExpand(isDrag);
+            StartCoroutine(TweenAniManager.SetTransparentGroup(mDragManager.DragGameObject, 1, 0.5f, 0));
+
+        };
+
+        mDragManager.OnDragCallBack += obj =>
+        {
+            if (!isDeteDragFunc)
+            {
+                isDeteDragFunc = true;
+                StartCoroutine(DetectViewAngleDown());
+            }
+
+        };
+
+        mDragManager.OnEndDragCallBack += obj =>
+        {
+            StartCoroutine(TweenAniManager.SetTransparentGroup(mDragManager.DragGameObject, 0.5f, 1f, 0));//只要結束拖曳，都回覆顏色
+            isDrag = false;
+            isDeteDragFunc = false;
+            SetCradTriggerExpand(isDrag);
+
+            // if (obj.GetComponent<ListCard>() == null) return;
+            if (obj == null || obj.GetComponent<EventTrigger>() == null) return;
+
+            ListCard temp = CardList[mDragManager.DragGameObject.transform.GetSiblingIndex()];
+
+            CardList.RemoveAt(mDragManager.DragGameObject.transform.GetSiblingIndex());
+
+            CardList.Insert(obj.transform.parent.GetSiblingIndex(), temp);
+
+
+            mDragManager.DragGameObject.transform.SetSiblingIndex(obj.transform.parent.GetSiblingIndex());
+            CoverDataSort();
+
+
+        };//換位置
+
+    }
+
+    private float displayHeigh = 0, canvasRealHeigh = 0;
+    private float DragStandard=300;
+    private IEnumerator DetectViewAngleDown()//之後要根據拖曳而偵測滑鼠位置是否要把陣列視角向下或向上
+    {
+
+
+        if (displayHeigh <= 0)
+        {
+            canvasRealHeigh = transform.root.GetComponent<RectTransform>().sizeDelta.y;//canvas 高度
+            displayHeigh = canvasRealHeigh - 540;                //顯示範圍
+        }
+
+        RectTransform gViewRect = gViewPanel.GetComponent<RectTransform>();
+
+        while (isDeteDragFunc)
+        {
+            float maxHeigh = gViewRect.sizeDelta.y - displayHeigh;//偵測可上去的的高度
+
+            float viewDisplayHeigh = gViewRect.localPosition.y;
+
+
+
+            if (viewDisplayHeigh < maxHeigh)
+            {
+                if (Input.mousePosition.y < DragStandard)
+                {
+                    // gViewRect.localPosition=new Vector2(gViewRect.localPosition.x,(gViewRect.localPosition.y+1)*((250-Input.mousePosition.y)/125));
+                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y + 1)+(5*((DragStandard-Input.mousePosition.y)/DragStandard)));
+                    Debug.Log("向下");
+                }
+
+            }
+
+            if (viewDisplayHeigh > -50)
+            {
+                if (canvasRealHeigh - Input.mousePosition.y < DragStandard)
+                {
+                    // gViewRect.localPosition=new Vector2(gViewRect.localPosition.x,(gViewRect.localPosition.y-1)*((250-(canvasRealHeigh-Input.mousePosition.y))/125));
+                    float yTop=canvasRealHeigh-DragStandard;
+                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y - 1)-(5*(Input.mousePosition.y-yTop)/DragStandard));
+                    Debug.Log("向上");
+                }
+
+            }
+
+
+            yield return null;
+        }
+    }
+
+    private void SetCradTriggerExpand(bool _isDrag)
+    {//擴張觸碰判斷
+
+        foreach (ListCard Lc in CardList)
+        {
+            Lc.IsDragButtonEffect(_isDrag);
+        }
+    }
+
+
+    private void CreateListOfSaveData()//從savedata新增單字組
+    {
+
+        foreach (WordListData Dic in DataManager.Instance.saveData.myLists)
+        {
+            GameObject sp = Instantiate(gListObject);
+
+            sp.transform.SetParent(gViewPanel.transform);
+
+
+            mDragManager.AddGameObjectEvent(sp);
+
+            sp.transform.localScale = new Vector3(1, 1, 1);
+            CardList.Add(sp.GetComponent<ListCard>());
+            sp.GetComponent<ListCard>().Init(Dic, CreateListCardFunc());
+        }
 
     }
 
@@ -62,6 +251,9 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
 
         sp.transform.SetParent(gViewPanel.transform);
 
+
+        mDragManager.AddGameObjectEvent(sp);
+
         sp.transform.localScale = new Vector3(1, 1, 1);
 
         CardList.Add(sp.GetComponent<ListCard>());
@@ -69,19 +261,19 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
         sp.GetComponent<ListCard>().Init(DataManager.Instance.saveData.AddNewList(_title), CreateListCardFunc());
     }
 
-    private void CreateListOfSaveData()//從savedata新增單字組
+
+
+
+    private void CoverDataSort()
     {
+        List<WordListData> temp = new List<WordListData>();
 
-        foreach (KeyValuePair<int, WordListData> Dic in DataManager.Instance.saveData.myLists)
+        foreach (ListCard ld in CardList)
         {
-            GameObject sp = Instantiate(gListObject);
-
-            sp.transform.SetParent(gViewPanel.transform);
-
-            sp.transform.localScale = new Vector3(1, 1, 1);
-            CardList.Add(sp.GetComponent<ListCard>());
-            sp.GetComponent<ListCard>().Init(Dic.Value, CreateListCardFunc());
+            temp.Add(ld.aData);
         }
+        DataManager.Instance.saveData.myLists = temp;
+
     }
 
     private ListCard.ListCardFunc CreateListCardFunc()//將控制中央面板的方法，覆值在每個cardList上
@@ -99,7 +291,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
         CancelDeleteModel();
         if (BelowMenuExpand)
         {//如果左側選單是開的，但已經按下功能按鈕，則關閉選單
-            ClickLiftMenuButton();
+            ClickBelowMenuButton();
         }
         StartCoroutine(PopupManager.Instance.OpenInputStringOneCurrectButtonWindow("請輸入群組名稱", CreateListObject));
     }
@@ -107,7 +299,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
     private bool BelowMenuAni = false;
     private bool BelowMenuExpand = false;
 
-    public void ClickLiftMenuButton()//點擊選單列表
+    public void ClickBelowMenuButton()//點擊選單列表
     {
         StartCoroutine(ToggleLeftMenu());
 
@@ -123,14 +315,16 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
         {
 
             BelowMenuExpand = false;
-            yield return BelowMenu.transform.DOLocalMoveY(-1110, 0.2f).WaitForCompletion();
+            //yield return BelowMenu.transform.DOLocalMoveY(-1310, 0.2f).WaitForCompletion();
+            yield return BelowMenu.GetComponent<RectTransform>().DOAnchorPosY(-150, 0.2f).WaitForCompletion();
             BelowMenuAni = false;
 
         }
         else
         {
             BelowMenuExpand = true;
-            yield return BelowMenu.transform.DOLocalMoveY(-810, 0.2f).WaitForCompletion();
+            // yield return BelowMenu.transform.DOLocalMoveY(-1010, 0.2f).WaitForCompletion();
+            yield return BelowMenu.GetComponent<RectTransform>().DOAnchorPosY(150, 0.2f).WaitForCompletion();
             BelowMenuAni = false;
 
         }
@@ -184,9 +378,15 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
 
         DeleteCardList.ForEach(dv =>
         {
-            DataManager.Instance.saveData.myLists.Remove(dv.aData.mListNum);
+
+
+            DataManager.Instance.saveData.myLists.Remove(dv.aData);
+
             CardList.Remove(dv);
             Destroy(dv.gameObject);
+
+
+
         });
 
     }

@@ -12,17 +12,24 @@ public class ListCard : MonoBehaviour
     public bool expand = false;
     public bool bntAni = false;//偵測這個物件是否在動畫的狀態，如果有就不要執行其他動畫，以免衝突
 
-    public GameObject expandObject;
+    public GameObject expandObject;//擴張後的資料
+
 
     [Header("UI")]
 
     public Text WordsCounts;
     public Text FoundingTime;
     public Text LastOpenTime;
-    public Text titleText;
+    public Text mTitleText;
     public Button ButtonTitle;
     public Button ButtonExam;
     public Toggle ToggleChooseDelete;
+
+    public Button IntoGameButton;
+
+    public GameObject mTriggerEventAera;
+
+    private static readonly Vector2 mTriggerEventAeraDefaultSize = new Vector2(1000, 100);
 
     public RectTransform ToggleBg;
 
@@ -33,68 +40,96 @@ public class ListCard : MonoBehaviour
     public void Init(WordListData _Data, ListCardFunc _func)
     {
         aData = _Data;
-        titleText.text = _Data.mTitle;
+        mTitleText.text = _Data.mTitle;
         ToggleChooseDelete.isOn = false;
-
+        SetButtonSetting();
         WordsCounts.text = "單字總量:" + (_Data.WordsCountOfList() > 0 ? _Data.WordsCountOfList() : 0);
         FoundingTime.text = "創立時間:" + _Data.mFoundingTime;
         LastOpenTime.text = "最後進入:" + _Data.mLastOpenTime;
         mFunc = _func;
-
+        Debug.Log(transform.gameObject.name + "的順序==>" + transform.GetSiblingIndex());
     }
-    
+
+    private void SetButtonSetting()
+    {
+        IntoGameButton.onClick.AddListener(ClickContentButton);
+        mTriggerEventAera.GetComponent<RectTransform>().sizeDelta = mTriggerEventAeraDefaultSize;
+    }
+
+
+
 
     public void OnToggleChooseDelete()//刪除模式
     {
-        if (ToggleChooseDelete.isOn)
+        Debug.Log("listcard 刪除button");
+        if (!ToggleChooseDelete.isOn)
         {
+            ToggleChooseDelete.isOn = true;
             mFunc._AddDeleteFunc(this);
         }
         else
         {
+            ToggleChooseDelete.isOn = false;
             mFunc._RemoveDeleteFunc(this);
         }
+
     }
 
     public void ClickTitleButton()//點擊標題，縮放單字組列表
     {
-        if (expand)
+        if (!ListControlManager.Instance.isDrag)//不是拖曳的狀態
         {
-            CLoseList();
+            if (expand)
+            {
+                CLoseList();
+                IntoGameButton.gameObject.SetActive(false);
+            }
+            else
+            {
+                OpenList();
+                IntoGameButton.gameObject.SetActive(true);
+            }
         }
-        else
-        {
-            OpenList();
-        }
+
     }
 
     public void ClickContentButton()
     {
-        IEContentButton();
-        //按鈕不可再按
+        SceneManager.Instance.StartChangScene(SceneManager.SceneType.WordControlManager, aData);
+    }
+
+    public void IsDragButtonEffect(bool isDrag)
+    {//當有按鈕被拖曳時期他按鈕的效果
+        RectTransform mTri=mTriggerEventAera.GetComponent<RectTransform>();
+        if (isDrag)
+        {
+            if (expand)
+            {
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,450);
+
+            }
+            else
+            {
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,150);
+            }
+
+
+        }
+        else
+        {
+            if (expand)
+            {
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,400);
+            }
+            else
+            {
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,100);
+            }
+
+        }
 
     }
 
-    // public IEnumerator IEContentButton()//模擬轉場
-    // {
-    //     // yield return SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData);
-    //     // yield return PopupManager.Instance.OpenLoading();
-    //     // yield return mFunc._CloseList();
-    //     // Debug.Log("進入場景" + aData.mTitle);
-    //     // yield return new WaitForSeconds(2);
-    //     // yield return mFunc._OpenList();
-    //     // yield return PopupManager.Instance.CloseLoading();
-    //     // Debug.Log("已過兩秒");
-    //     yield return SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData);
-    //     StartCoroutine(SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData));
-    // }
-
-    public void IEContentButton()//模擬轉場
-    {
-
-        // StartCoroutine(SceneManager.Instance.ChangeScene(SceneManager.SceneType.WordControlManager,aData));
-        SceneManager.Instance.StartChangScene(SceneManager.SceneType.WordControlManager,aData);
-    }
 
 
     public void OpenDeleteModel()
@@ -114,19 +149,21 @@ public class ListCard : MonoBehaviour
 
 
 
-    private void OpenList()
+    private void OpenList()//開啟ListCard畫面
     {
         if (bntAni) return;
         expandObject.SetActive(true);
         expand = true;
-        StartCoroutine(ToggleYSizeChange(100, 400));
+        StartCoroutine(ToggleYSizeChange(this.gameObject, 100, 400));
+        StartCoroutine(ToggleYSizeChange(mTriggerEventAera, 100, 400));
     }
 
     private void CLoseList()
     {
         if (bntAni) return;
         expand = false;
-        StartCoroutine(ToggleYSizeChange(400, 100, 0.2f, () => { expandObject.SetActive(false); }));
+        StartCoroutine(ToggleYSizeChange(this.gameObject, 400, 100, 0.2f, () => { expandObject.SetActive(false); }));
+        StartCoroutine(ToggleYSizeChange(mTriggerEventAera, 400, 100, 0.2f));
     }
 
     private IEnumerator ToggleXSizeChange(float Start, float End, float time = 0.2f, Action callback = null)//List 刪除按鈕動畫
@@ -145,11 +182,12 @@ public class ListCard : MonoBehaviour
 
     }
 
-    private IEnumerator ToggleYSizeChange(float Start, float End, float time = 0.2f, Action callback = null)
+    private IEnumerator ToggleYSizeChange(GameObject obj, float Start, float End, float time = 0.2f, Action callback = null)
     {
         bntAni = true;
-        RectTransform Rt = transform.GetComponent<RectTransform>();
-        Rt.sizeDelta = new Vector2(transform.GetComponent<RectTransform>().sizeDelta.x, Start);
+        //RectTransform Rt=transform.GetComponent<RectTransform>();
+        RectTransform Rt = obj.transform.GetComponent<RectTransform>();
+        Rt.sizeDelta = new Vector2(obj.transform.GetComponent<RectTransform>().sizeDelta.x, Start);
 
         float addSpeed = (End - Start) / time * Time.deltaTime;
         bool rule = Start < End ? Rt.sizeDelta.y < End : Rt.sizeDelta.y >= End;

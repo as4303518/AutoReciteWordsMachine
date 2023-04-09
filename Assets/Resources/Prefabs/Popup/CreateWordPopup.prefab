@@ -573,6 +573,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0e88c9cfceef7274ea00d296be3c79dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mParentFilter: {fileID: 0}
   mTag: {fileID: 4891377370308135908}
   inputWord: {fileID: 8474255512735504327}
   inputTransTale: {fileID: 4645454304831714764}
@@ -1793,7 +1794,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Option A
+  m_Text: 
 --- !u!1 &5608930157167661670
 GameObject:
   m_ObjectHideFlags: 0
@@ -2002,21 +2003,7 @@ MonoBehaviour:
   m_ItemImage: {fileID: 0}
   m_Value: 0
   m_Options:
-    m_Options:
-    - m_Text: Option A
-      m_Image: {fileID: 0}
-    - m_Text: Option B
-      m_Image: {fileID: 0}
-    - m_Text: Option C
-      m_Image: {fileID: 0}
-    - m_Text: Option D
-      m_Image: {fileID: 0}
-    - m_Text: Option E
-      m_Image: {fileID: 0}
-    - m_Text: Option F
-      m_Image: {fileID: 0}
-    - m_Text: Option G
-      m_Image: {fileID: 0}
+    m_Options: []
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []

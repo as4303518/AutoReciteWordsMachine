@@ -4,12 +4,13 @@ using UnityEngine;
 using UnityEngine.UI;
 using DG.Tweening;
 using System.Linq;
+using UnityEngine.EventSystems;
 
 public class WordControlManager : InstanceScript<WordControlManager>, PrefabScene
 {
 
     //根據params 選出對應的字卡陣列，生產出字卡
-
+    [Header("Default")]
     public GameObject WordCardPrefabs;
 
     public GameObject gViewParent;//字卡陣列母物件
@@ -22,7 +23,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     private ManagerStatus ControlModel;
 
-
+    private DragUI mDragManager;//管理拖曳的組件
 
     //private int ListCount=1;
 
@@ -38,29 +39,34 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     public Button CreateButton;
     public Button BackButton;
 
-    void Awake()
-    {//到時會使用切換場景的方式呼叫，目前先用awake
+    public InputField SearchField;
 
-        //MonoScript();
-        Debug.Log("awake有執行");
-        //Init(TestListData());
+    public Dropdown SearchModle;
 
-    }
+    // void Awake()
+    // {//到時會使用切換場景的方式呼叫，目前先用awake
 
-    private WordListData TestListData()//暫時測試
-    {
-        WordListData w = new WordListData("第一課程", 1);
-        w.mWords.Add(new WordData("Irritated", "煩惱", 451));
-        w.mWords.Add(new WordData("apple", "蘋果", 71));
-        w.mWords.Add(new WordData("banana", "香蕉", 31));
-        return w;
-    }
+    //     //MonoScript();
+    //     Debug.Log("awake有執行");
+    //     //Init(TestListData());
+
+    // }
+
+    // private WordListData TestListData()//暫時測試
+    // {
+    //     WordListData w = new WordListData("第一課程", 1);
+    //     w.mWords.Add(new WordData("Irritated", "煩惱", 451));
+    //     w.mWords.Add(new WordData("apple", "蘋果", 71));
+    //     w.mWords.Add(new WordData("banana", "香蕉", 31));
+    //     return w;
+    // }
 
 
     public IEnumerator Init(BaseData _wordListData)
     {
         aData = _wordListData as WordListData;
-        Debug.Log("以初始化==>" + gameObject.name);
+        mDragManager = GetComponent<DragUI>();
+
         CreateWordCardToViewInSaveData();
         UIUpdate();
         ButtonSetting();
@@ -82,9 +88,204 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
         DeleteButton.onClick.AddListener(ClickDeleteButton);
         CancelDeleteButton.onClick.AddListener(ClickCancelDeteleButton);
         BelowButtonGroup.onClick.AddListener(ClickBelowButtonGroup);
+        SearchField.onValueChanged.AddListener(SearchOfStr);
+        SearchModle.onValueChanged.AddListener(SearchModleChange);
+        SetDragSettingEvent();
+        SetSearchDirectory();
 
     }
-    private void CreateWordCardToViewInSaveData()//生成data裡的字卡
+    private void SearchOfStr(string str)//搜尋功能
+    {
+        Debug.Log("偵測搜尋==>" + str);
+
+        IEnumerable<WordCard> tempList;
+
+        switch (SearchModle.value)
+        {
+
+            case 0:
+
+                tempList = WordCardList.Where(x => x.aData.wordText.Contains(str));
+
+                break;
+            case 1:
+
+                tempList = WordCardList.Where(x => x.aData.mTag.Contains(str));
+
+                break;
+
+            default:
+
+                tempList = WordCardList.Where(x => x.aData.wordText.Contains(str));
+
+                break;
+        }
+
+        WordCardList.ForEach(c =>
+        {
+            bool isHaveTemp = false;
+            foreach (var card in tempList)
+            {
+
+                if (c.aData.wordText == card.aData.wordText)
+                {
+
+                    c.gameObject.SetActive(true);
+                    isHaveTemp = true;
+
+                }
+            }
+            if (!isHaveTemp)
+            {
+                c.gameObject.SetActive(false);
+            }
+
+        });
+
+    }
+    private bool isDrag = false;
+    private void SetDragSettingEvent()
+    {
+
+        mDragManager.ClearEvent();
+
+        mDragManager.OnClickCallBack += obj =>
+        {
+
+            switch (ControlModel)
+            {
+                case ManagerStatus.Normal:
+
+                    //未來可能有額外的功能
+                    break;
+
+                case ManagerStatus.Delete:
+
+                    if (isDrag == false) obj.transform.parent.GetComponent<WordCard>().ChoseDeleteThisCard();
+
+                    break;
+            }
+        };
+
+        mDragManager.OnBeginDragCallBack += obj =>
+        {
+            isDrag = true;
+            StartCoroutine(TweenAniManager.SetTransparentGroup(mDragManager.DragGameObject, 1, 0.5f, 0));
+            SetCradTriggerExpand(isDrag);
+        };
+
+        mDragManager.OnDragCallBack += obj =>
+        {
+            if (!isDeteDragFunc)
+            {
+                isDeteDragFunc = true;
+                StartCoroutine(DetectViewAngleDown());
+            }
+        };
+
+        mDragManager.OnEndDragCallBack += obj =>
+        {
+            StartCoroutine(TweenAniManager.SetTransparentGroup(mDragManager.DragGameObject, 0.5f, 1f, 0));
+
+            isDrag = false;
+            isDeteDragFunc = false;
+            SetCradTriggerExpand(isDrag);
+
+            if (obj.GetComponent<EventTrigger>() == null) return;
+
+            WordCard getWc = mDragManager.DragGameObject.GetComponent<WordCard>();
+
+            WordCardList.Remove(getWc);
+
+            WordCardList.Insert(obj.transform.parent.GetSiblingIndex(), getWc);
+
+            mDragManager.DragGameObject.transform.SetSiblingIndex(obj.transform.parent.GetSiblingIndex());
+            SaveWordInfo();
+
+
+        };
+
+    }
+
+    private void SetSearchDirectory()//設置有哪些搜尋主目標(以名字為主，以標籤為主等)
+    {
+        SearchModle.options.Add(new Dropdown.OptionData(LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle)));
+        SearchModle.options.Add(new Dropdown.OptionData(LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTag)));
+    }
+
+    private void SearchModleChange(int changeModle)
+    {//每當選擇不同的篩選時,重製或重新選擇
+        Debug.Log("轉換篩選模式到===>" + SearchModle.options[changeModle].text);
+        SearchOfStr(SearchField.text);
+    }
+    public GameObject gViewPanel;//字卡陣列母物件
+    private bool isDeteDragFunc = false;//偵測拖動中的方法是否有執行
+    private float displayHeigh = 0, canvasRealHeigh = 0;
+
+    private float DragStandard = 300;
+    private IEnumerator DetectViewAngleDown()//之後要根據拖曳而偵測滑鼠位置是否要把陣列視角向下或向上
+    {
+
+        // Debug.Log("滑鼠位置" + Input.mousePosition);
+        // Debug.Log("螢幕長" + Screen.height + "寬==>" + Screen.width);
+        //transform.root.getcom<canvas>().he-540 固定長寬比=可顯示部用曾長的全部面積0 ~ ~ view heigh-這個數值
+
+
+        if (displayHeigh <= 0)
+        {
+            canvasRealHeigh = transform.root.GetComponent<RectTransform>().sizeDelta.y;//canvas 高度
+            displayHeigh = canvasRealHeigh - 540;                //顯示範圍
+        }
+
+        RectTransform gViewRect = gViewPanel.GetComponent<RectTransform>();
+
+        while (isDeteDragFunc)
+        {
+            float maxHeigh = gViewRect.sizeDelta.y - displayHeigh;//偵測可上去的的高度
+
+            float viewDisplayHeigh = gViewRect.localPosition.y;
+
+            Debug.Log("偵測");
+
+            if (viewDisplayHeigh < maxHeigh)
+            {
+                if (Input.mousePosition.y < DragStandard)
+                {
+
+                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y + 1) + (4 * ((DragStandard - Input.mousePosition.y) / DragStandard)));
+                    Debug.Log("向下");
+                }
+
+            }
+
+            if (viewDisplayHeigh > -50)
+            {
+                if (canvasRealHeigh - Input.mousePosition.y < DragStandard)
+                {
+
+                    float yTop = canvasRealHeigh - DragStandard;//觸發往上的距離門檻
+                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y - 1) - (5 * (Input.mousePosition.y - yTop) / DragStandard));
+                    Debug.Log("向上");
+                }
+
+            }
+
+
+            yield return null;
+        }
+    }
+
+    private void SetCradTriggerExpand(bool _isDrag)
+    {
+        foreach (WordCard wc in WordCardList)
+        {
+            wc.IsDragButtonEffect(_isDrag);
+        }
+    }
+
+
+
+    private void CreateWordCardToViewInSaveData()//生成Savedata裡的字卡
     {
 
         int ListCount = 1;
@@ -95,40 +296,6 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
             ListCount++;
 
         }
-    }
-
-    private void SaveWordInfo(WordCard Wc)//更新陣列單字的狀態
-    {
-        // aData.mWords.Where(v=>{return true;}).FirstOrDefault();
-        for (int i = 0; i < aData.mWords.Count; i++)
-        {
-            if (aData.mWords[i] == Wc.aData)//==在WordData裡有額外的判斷式
-            {
-                aData.mWords[i] = Wc.aData;//存list裡的陣列資料
-                SaveListDataToDataManager();//存savedata裡的資料
-                return;
-            }
-        }
-    }
-    private void SaveListDataToDataManager()
-    {
-        Debug.Log("更新陣列的狀態");
-        DataManager.Instance.saveData.SetListWordData(aData);
-    }
-
-    private void DeleteDataOfTempList()
-    {
-
-        foreach (WordCard wc in TempChooseCardList)
-        {
-            WordCardList.Remove(wc);
-            aData.mWords.Remove(wc.aData);
-            //wc.destory  //會有個dotween之類
-            Destroy(wc.gameObject);
-        }
-
-
-        SaveListDataToDataManager();
     }
 
 
@@ -146,9 +313,8 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
      //  PopupManager.Instance.OpenTipTwoOptionsButtonWindow("確定要關閉視窗?", "您確定要放棄當前編輯的單字嗎?",
 
         StartCoroutine(PopupManager.Instance.OpenTipTwoOptionsButtonWindow(
-         LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle),
-        // LanguageTranstale.Instance.GetStr(MyLabel.Back),
-        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTip),
+        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle),
+        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTag),
         PopupManager.Instance.CloseAllPopup,
         PopupManager.Instance.ClosePopup
         ));
@@ -157,13 +323,9 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     //AddListData 是否要加到陣列裡,如果是已經在資料上的(原本儲存的)就不需要
     private void CreateNewWord(WordData wd, int CardNum, bool AddListData)//生成新的字卡，加入到aData陣列
     {
-        if (AddListData)
-        {
-            aData.mWords.Add(wd);//以新增卡片，所以把卡的資料加到陣列
-            aData.wordCardAllCount += 1;//幫預設id加1
-        }
-        GameObject sp = Instantiate(WordCardPrefabs, gViewParent.transform);
 
+        GameObject sp = Instantiate(WordCardPrefabs, gViewParent.transform);
+        mDragManager.AddGameObjectEvent(sp);
         WordCard NewCard = sp.GetComponent<WordCard>();
 
         NewCard.Init(wd, new WordCard.WordCardFunc(
@@ -174,16 +336,74 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
         //aData.mWords.Count
         WordCardList.Add(NewCard);
-        SaveWordInfo(NewCard);
+        if (AddListData)
+        {
+            aData.mWords.Add(wd);//以新增卡片，所以把卡的資料加到陣列
+            aData.wordCardAllCount += 1;//幫預設id加1
+            SaveWordInfo();
+        }
+
         UIUpdate();
         // sp.GetComponent<WordCard>().Init()
 
     }
+
     private void CreateNewWord(WordData wd, int CardNum)//生成新的字卡,初始化時使用
     {
 
         CreateNewWord(wd, CardNum, true);
+    }
 
+    // private void SaveWordInfo(WordCard Wc)//更新某筆資料至陣列單字
+    // {
+    //     // aData.mWords.Where(v=>{return true;}).FirstOrDefault();
+    //     for (int i = 0; i < aData.mWords.Count; i++)
+    //     {
+    //         if (aData.mWords[i] == Wc.aData)//==在WordData裡有額外的判斷式
+    //         {
+    //             aData.mWords[i] = Wc.aData;//存list裡的陣列資料
+    //             SaveListDataToDataManager();//存savedata裡的資料
+    //             return;
+    //         }
+    //     }
+    // }
+
+    private void SaveWordInfo()//更新某筆資料至陣列單字
+    {
+        Debug.Log("word儲存");
+        List<WordData> AllWordData = new List<WordData>();
+
+        foreach (WordCard wc in WordCardList)
+        {
+            wc.ReSetNumList();
+            AllWordData.Add(wc.aData);
+
+        }
+
+        aData.mWords = AllWordData;
+        SaveListDataToDataManager();
+
+    }
+
+    private void SaveListDataToDataManager()//更新資料至主Data上
+    {
+        Debug.Log("更新陣列的狀態");
+        DataManager.Instance.saveData.CoverListData(aData);
+    }
+
+    private void DeleteDataOfTempList()//刪除資料
+    {
+        Debug.Log("word儲存");
+        foreach (WordCard wc in TempChooseCardList)
+        {
+            WordCardList.Remove(wc);
+            aData.mWords.Remove(wc.aData);
+            //wc.destory  //會有個dotween之類
+            Destroy(wc.gameObject);
+        }
+
+
+        SaveListDataToDataManager();
     }
 
     private void AddWordCardToTempList(WordCard wc)//加入字卡進臨時陣列
@@ -221,7 +441,6 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
             default:
                 Debug.Log("無法在其他狀態使用該按鈕");
                 break;
-
         }
 
     }
@@ -276,13 +495,13 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     {
         if (Ani) yield break;//如果在執行動畫，則不給執行以下方法
         Ani = true;
-        Transform parT=BelowButtonGroup.transform.parent.transform;
+        Transform parT = BelowButtonGroup.transform.parent.transform;
 
         // Debug.Log("測試顯示==>"+parT.anchoredPosition+"測試顯示2===>"+parT.localPosition);
         if (!Expand)
         {
             Expand = true;
-            Tween t = parT.DOLocalMoveY(-810, 0.2f);
+            Tween t = parT.GetComponent<RectTransform>().DOAnchorPosY(150, 0.2f);
             yield return t.WaitForCompletion();
             Ani = false;
 
@@ -290,7 +509,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
         else
         {
             Expand = false;
-            Tween t = parT.DOLocalMoveY(-1110, 0.2f);
+            Tween t = parT.GetComponent<RectTransform>().DOAnchorPosY(-150, 0.2f);
             yield return t.WaitForCompletion();
             Ani = false;
         }
@@ -319,11 +538,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     }
 
-    // private int getListNum(){//紀錄增加的數量
-    //     ListCount++;
-    //     return ListCount;
 
-    // }
 
     void OnApplicationQuit()
     {

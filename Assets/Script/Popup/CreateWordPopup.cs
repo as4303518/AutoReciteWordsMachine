@@ -32,8 +32,17 @@ public class CreateWordPopup : PopupWindow
         CreateWord = createWord;
         CloseFilter = closeFilter;
         CardSquenceNum = cardSquenceNum;
+        SetTagChoose();
         establish.onClick.AddListener(ClickEstablishWord);
 
+    }
+
+    private void SetTagChoose()//設置tag  如果有單字設置tag這個tag卻被刪除時，會回到預設
+    {
+        DataManager.Instance.saveData.Classification.ForEach(str =>
+        {
+            mTag.options.Add(new Dropdown.OptionData(str));
+        });
     }
 
     public void ClickEstablishWord()

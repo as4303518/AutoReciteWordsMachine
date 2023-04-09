@@ -14,6 +14,7 @@ public class GameManager : InstanceScript<GameManager>
         MainManagerParent = GameObject.Find("MainManager");
         StartCoroutine(DontDestoryThis());
         StartCoroutine(InstanceAllManager());
+
     }
 
 

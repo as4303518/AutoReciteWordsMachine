@@ -17,7 +17,7 @@ public class WordListData : BaseData
 
     public int mListNum;//list編號
 
-    public int wordCardAllCount = 0;//單字量編號 唯一識別碼
+    public int wordCardAllCount = 0;//單字陣列裡的單字的 唯一識別碼
     public List<WordData> mWords = new List<WordData>() { };//裡面擁有的單字
 
 
@@ -29,6 +29,7 @@ public class WordListData : BaseData
         mFoundingTime = DateTime.Now.ToShortDateString();
     }
 
+  
     
 
     public void SetLastTime(string _lastTime)

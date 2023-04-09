@@ -22,25 +22,26 @@ public class LanguageDataSetting : EditorWindow
 
     /////////////
     private SerializedObject main;
-    private SerializedProperty Sp;
+
     private Vector2 ScrollView = Vector2.zero;
     private GUIStyle nStyle;
 
     private string Search = "";
 
+    private bool FirstOpen=true;//為了能第一時間更新,所以多這個布林值判斷，原本的一開始開啟視窗新舊語言相同，所以無法判定
+
     [MenuItem("Uframework/gui查看")]
 
     public static void InitWindow()
     {
-        EditorWindow.GetWindow(typeof(LanguageDataSetting));
 
+        EditorWindow.GetWindow(typeof(LanguageDataSetting));
 
     }
 
     private void OnEnable()
     {
         main = new SerializedObject(this);
-        Sp = main.FindProperty("SaveData");
     }
     void OnGUI()
     {
@@ -53,16 +54,18 @@ public class LanguageDataSetting : EditorWindow
 
         };
         main.Update();
-        if (OldLanguage != MyLanguage)
+        if (OldLanguage != MyLanguage||FirstOpen)
         {
+            FirstOpen=false;
             OldLanguage = MyLanguage;
             OverrideSaveDataOfJson();
         }
-        MyLanguage = (Language)EditorGUILayout.EnumPopup(MyLanguage);//選擇語言彈窗
+
+        MyLanguage = (Language)EditorGUILayout.EnumPopup(MyLanguage);//選擇語言陣列彈窗(第一行)
+        
 
         Search = EditorGUILayout.TextField("搜尋", Search, "box", GUILayout.MaxWidth(position.x / 3));//搜尋視窗
 
-        ScrollView = GUILayout.BeginScrollView(ScrollView);//滑塊滾輪
 
         List<string> tempList = new List<string>();//當前已有的標題
 
@@ -126,7 +129,7 @@ public class LanguageDataSetting : EditorWindow
         SaveData.MyText.Clear();
         SaveData.MyText = newCorrectList;
 
-
+        ScrollView = GUILayout.BeginScrollView(ScrollView);//滑塊滾輪
 
         foreach (var v in SaveData.MyText)//顯示
         {
@@ -144,6 +147,7 @@ public class LanguageDataSetting : EditorWindow
             Debug.Log("完全覆寫");
             SetJsonToPath();
         }
+        #region 
         // GUILayout.Space(10);
 
         // if (GUILayout.Button("overrideTest"))
@@ -159,9 +163,8 @@ public class LanguageDataSetting : EditorWindow
         //     Debug.Log("讀取有的檔案");
         //     OverrideSaveDataOfJson();
         // }
-
+        #endregion
         main.ApplyModifiedProperties();
-
 
     }
 
