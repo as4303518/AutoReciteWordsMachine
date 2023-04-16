@@ -24,8 +24,10 @@ public class GameManager : InstanceScript<GameManager>
         yield return BindManager<PopupManager>();//彈窗
         yield return BindManager<DataManager>();//數據管理員
         yield return BindManager<LanguageTranstale>();//語言切換
+
         //之後還有音樂等
-        yield return SceneManager.Instance.ChangeScene(SceneManager.SceneType.ListControlManager);//進入場景
+        yield return SceneManager.Instance.ChangeScene(SceneManager.SceneType.ListControlManager,DataManager.Instance.saveData.WordListsOfGroup);//進入場景
+        // yield return SceneManager.Instance.ChangeScene(SceneManager.SceneType.ListControlManager,DataManager.Instance.saveData.WordListsOfFinishGroup);//進入場景
     }
     // Update is called once per frame
 

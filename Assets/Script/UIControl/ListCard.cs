@@ -27,7 +27,7 @@ public class ListCard : MonoBehaviour
 
     public Button IntoGameButton;
 
-    public GameObject mTriggerEventAera;
+    public GameObject mTriggerEventAera;//觸碰範圍
 
     private static readonly Vector2 mTriggerEventAeraDefaultSize = new Vector2(1000, 100);
 
@@ -100,17 +100,17 @@ public class ListCard : MonoBehaviour
 
     public void IsDragButtonEffect(bool isDrag)
     {//當有按鈕被拖曳時期他按鈕的效果
-        RectTransform mTri=mTriggerEventAera.GetComponent<RectTransform>();
+        RectTransform mTri = mTriggerEventAera.GetComponent<RectTransform>();
         if (isDrag)
         {
             if (expand)
             {
-                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,450);
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x, 450);
 
             }
             else
             {
-                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,150);
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x, 150);
             }
 
 
@@ -119,11 +119,11 @@ public class ListCard : MonoBehaviour
         {
             if (expand)
             {
-                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,400);
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x, 400);
             }
             else
             {
-                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x,100);
+                mTri.sizeDelta = new Vector2(mTri.sizeDelta.x, 100);
             }
 
         }
@@ -146,7 +146,23 @@ public class ListCard : MonoBehaviour
         ToggleChooseDelete.interactable = false;
     }
 
+    public void TransferAnimation()
+    {
+        if (expand)
+        {
+            GetComponent<RectTransform>().sizeDelta = new Vector2(1000, 0);
+            StartCoroutine(ToggleYSizeChange(this.gameObject, 0, 400,0.3f));
 
+        }
+        else
+        {
+            GetComponent<RectTransform>().sizeDelta = new Vector2(1000, 0);
+            StartCoroutine(ToggleYSizeChange(this.gameObject, 0, 100,0.3f));
+        }
+        ButtonTitle.GetComponent<RectTransform>().sizeDelta = new Vector2(1000, 0);
+        StartCoroutine(ToggleYSizeChange(ButtonTitle.gameObject, 0, 100,0.3f));
+
+    }
 
 
     private void OpenList()//開啟ListCard畫面
@@ -165,6 +181,8 @@ public class ListCard : MonoBehaviour
         StartCoroutine(ToggleYSizeChange(this.gameObject, 400, 100, 0.2f, () => { expandObject.SetActive(false); }));
         StartCoroutine(ToggleYSizeChange(mTriggerEventAera, 400, 100, 0.2f));
     }
+
+    private void Open() { }
 
     private IEnumerator ToggleXSizeChange(float Start, float End, float time = 0.2f, Action callback = null)//List 刪除按鈕動畫
     {
@@ -201,6 +219,7 @@ public class ListCard : MonoBehaviour
             yield return null;
         }
         bntAni = false;
+        Rt.sizeDelta = new Vector2(obj.transform.GetComponent<RectTransform>().sizeDelta.x, End);
         if (callback != null) callback();
 
     }

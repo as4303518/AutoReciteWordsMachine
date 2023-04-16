@@ -25,6 +25,9 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     private DragUI mDragManager;//管理拖曳的組件
 
+    [Header("Prefabs")]
+    public GameObject WordInfoPopup;
+
     //private int ListCount=1;
 
     [Header("UI")]
@@ -97,7 +100,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     private void SearchOfStr(string str)//搜尋功能
     {
         Debug.Log("偵測搜尋==>" + str);
-
+        str=str.ToUpper();
         IEnumerable<WordCard> tempList;
 
         switch (SearchModle.value)
@@ -105,18 +108,23 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
             case 0:
 
-                tempList = WordCardList.Where(x => x.aData.wordText.Contains(str));
+                tempList = WordCardList.Where(x => x.aData.wordText.ToUpper().Contains(str));
 
                 break;
             case 1:
 
-                tempList = WordCardList.Where(x => x.aData.mTag.Contains(str));
+                tempList = WordCardList.Where(x => x.aData.mTag.ToUpper().Contains(str));
+
+                break;
+            case 2:
+
+                tempList = WordCardList.Where(x => x.mFunc.mNum.ToString()==str);
 
                 break;
 
             default:
 
-                tempList = WordCardList.Where(x => x.aData.wordText.Contains(str));
+                tempList = WordCardList.Where(x => x.aData.wordText.ToUpper().Contains(str));
 
                 break;
         }
@@ -201,6 +209,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
             mDragManager.DragGameObject.transform.SetSiblingIndex(obj.transform.parent.GetSiblingIndex());
             SaveWordInfo();
+           getWc.TransferAnimation();
 
 
         };
@@ -209,8 +218,9 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     private void SetSearchDirectory()//設置有哪些搜尋主目標(以名字為主，以標籤為主等)
     {
-        SearchModle.options.Add(new Dropdown.OptionData(LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle)));
-        SearchModle.options.Add(new Dropdown.OptionData(LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTag)));
+        SearchModle.options.Add(new Dropdown.OptionData(LanguageTranstale.Instance.GetStr(MyLabel.SearchSortName)));
+        SearchModle.options.Add(new Dropdown.OptionData(LanguageTranstale.Instance.GetStr(MyLabel.SearchSortTag)));
+        SearchModle.options.Add(new Dropdown.OptionData(LanguageTranstale.Instance.GetStr(MyLabel.SearchSortNum)));
     }
 
     private void SearchModleChange(int changeModle)

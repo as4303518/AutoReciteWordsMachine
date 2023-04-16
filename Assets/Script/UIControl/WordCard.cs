@@ -10,20 +10,24 @@ public class WordCard : MonoBehaviour
 {
 
     [Header("UI")]
-    public Button wordInfoButton;
-    public Toggle DeleteToggle;
-    public Dropdown mTagDropdowm;
     public Text mNumber;
     public Text WordText;
     public Text TransTaleText;
     public Text SentenceText;
 
 
+    [Header("Button")]
+    public Button wordInfoButton;
+    public Toggle DeleteToggle;
+    public Dropdown mTagDropdowm;
+    [Header("Prefabs")]
+    public GameObject InfoPopupPrffabs;
+
     [Header("Default")]
 
     public GameObject mTriggerEventAera;
 
-    private Vector2 mTriggerEventAeraDefaultSize = new Vector2(880, 500);
+    private Vector2 mTriggerEventAeraDefaultSize = new Vector2(800, 500);
 
     // //單字顯示實體腳本
     // private string wordText;
@@ -31,7 +35,7 @@ public class WordCard : MonoBehaviour
     // private string sentenceContext;
     // private string Remark;//後台的註記
 
-    private WordCardFunc mFunc;
+    public WordCardFunc mFunc;
 
     public WordData aData;
 
@@ -63,7 +67,7 @@ public class WordCard : MonoBehaviour
         if (!isHaveTag)
         {//未找到對應標籤(可能是被刪除了)
             mTagDropdowm.value = 0;
-            aData.mTag=mTagDropdowm.options[0].text;
+            aData.mTag = mTagDropdowm.options[0].text;
         }
     }
 
@@ -71,6 +75,14 @@ public class WordCard : MonoBehaviour
     {
         mTriggerEventAera.GetComponent<RectTransform>().sizeDelta = mTriggerEventAeraDefaultSize;
         mTagDropdowm.onValueChanged.AddListener(ClickTag);
+
+        wordInfoButton.onClick.AddListener(() =>
+        {
+            Debug.Log("觸發了資訊按鈕");
+             StartCoroutine(ClickInfoButton());
+        });
+
+        
         // DeleteToggle.onValueChanged.AddListener(ChoseDeleteThisCard);
 
     }
@@ -94,12 +106,17 @@ public class WordCard : MonoBehaviour
 
     public void ReSetNumList()
     {
-        mNumber.text = "No." + (transform.GetSiblingIndex()+1);//mnum是字卡順序，非唯一識別編號
+        mNumber.text = "No." + (transform.GetSiblingIndex() + 1);//mnum是字卡順序，非唯一識別編號
     }
-    public void ClickInfoButton()//開啟字卡詳細資訊
+    public IEnumerator ClickInfoButton()//開啟字卡詳細資訊
     {
 
         Debug.Log("點擊了" + aData.wordText + "編號==>" + aData.wordNum);
+        GameObject sp = PopupManager.Instance.OpenPopup(InfoPopupPrffabs);
+        sp.GetComponent<WordInfoPopup>().Init(aData);
+        yield return PopupManager.Instance.PopupWindowTweenIn(sp);
+        //open 
+
 
     }
 
@@ -115,11 +132,17 @@ public class WordCard : MonoBehaviour
         }
         else
         {
-            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(880, 450);
+            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 450);
         }
     }
 
+    public void TransferAnimation()
+    {
 
+        GetComponent<RectTransform>().sizeDelta = new Vector2(800, 0);
+        StartCoroutine(ToggleYSizeChange(this.gameObject, 0, 450, 0.3f));
+
+    }
     private bool Ani = false;
     public void ChoseDeleteThisCard()
     {
@@ -167,6 +190,35 @@ public class WordCard : MonoBehaviour
     {//狀態重製
         Ani = false;
         DeleteToggle.transform.DOKill();
+    }
+    private IEnumerator ToggleYSizeChange(GameObject obj, float Start, float End, float time = 0.2f, Action callback = null)
+    {
+
+        //RectTransform Rt=transform.GetComponent<RectTransform>();
+        RectTransform Rt = obj.transform.GetComponent<RectTransform>();
+        Rt.sizeDelta = new Vector2(obj.transform.GetComponent<RectTransform>().sizeDelta.x, Start);
+
+        float addSpeed = (End - Start) / time * Time.deltaTime;
+        bool rule = Start < End ? Rt.sizeDelta.y < End : Rt.sizeDelta.y >= End;
+
+        while (rule)
+        {
+
+            Rt.sizeDelta = new Vector2(Rt.sizeDelta.x, Rt.sizeDelta.y + addSpeed);
+            rule = Start < End ? Rt.sizeDelta.y < End : Rt.sizeDelta.y >= End;
+            RefreshContentSizeFitter();
+            yield return null;
+        }
+        Rt.sizeDelta = new Vector2(obj.transform.GetComponent<RectTransform>().sizeDelta.x, End);
+        if (callback != null) callback();
+
+    }
+
+    private void RefreshContentSizeFitter()//刷新Content filter(改變母物件大小)
+    {
+        transform.parent.GetComponent<ContentSizeFitter>().enabled = false;
+        transform.parent.GetComponent<ContentSizeFitter>().enabled = true;
+
     }
 
     sealed public class WordCardFunc

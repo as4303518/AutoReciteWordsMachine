@@ -65,7 +65,6 @@ public class PopupManager : InstanceScript<PopupManager>
     public GameObject OpenPopup(GameObject _popup, Action _callBack = null, bool DefaultCloseFilter = true, bool _transparent = false)//普通彈窗的開啟與關閉
     {
 
-
         GameObject sp = Instantiate(_popup);
 
         GameObject filter = Instantiate(Filter, FilterParentCanvas.transform);
@@ -94,13 +93,20 @@ public class PopupManager : InstanceScript<PopupManager>
     {
         return OpenPopup(_popup, null, false, _transparent);
     }
+
+    public GameObject OpenPopup(GameObject _popup)//用於提示視窗，基本上生成後便不歸popupManager控制
+    {
+        return OpenPopup(_popup, null, true, false);
+    }
     //兩個按鈕
     public IEnumerator OpenTipTwoOptionsButtonWindow(string _Title, string _Content, Func<IEnumerator> _Correct, Func<int, IEnumerator> _Cancel, Action _filterCallBack = null, bool DefaultCloseFilter = true)
     {
 
-        TwoOptionsWindowPopup sp = OpenPopup
-        (Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "TwoOptionsWindowPopup"), _filterCallBack, DefaultCloseFilter, false)
-        .GetComponent<TwoOptionsWindowPopup>();
+        ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "TwoOptionsWindowPopup");
+
+        yield return new WaitUntil(() => spPrefabs.isDone);
+
+        TwoOptionsWindowPopup sp = OpenPopup((spPrefabs.asset as GameObject), _filterCallBack, DefaultCloseFilter, false).GetComponent<TwoOptionsWindowPopup>();
 
         sp.Init(new TwoOptionsWindowPopup.TwoOptionsWindowPopupFunc(_Title, _Content, _Correct, _Cancel));
         yield return PopupWindowTweenIn(sp.gameObject);
@@ -110,18 +116,27 @@ public class PopupManager : InstanceScript<PopupManager>
     //一個輸入文字一個確定按鈕
     public IEnumerator OpenInputStringOneCurrectButtonWindow(string tip, Action<string> _correctButton, Action _filterCallBack = null)
     {
-        InputStringWindowPopup sp = OpenPopup
-        (Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "InputStringWindowPopup"), _filterCallBack)
-        .GetComponent<InputStringWindowPopup>();
+        ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "InputStringWindowPopup");
+
+        yield return new WaitUntil(() => spPrefabs.isDone);
+
+
+        InputStringWindowPopup sp = OpenPopup((spPrefabs.asset as GameObject), _filterCallBack).GetComponent<InputStringWindowPopup>();
+
         sp.ReturnList += _correctButton;
+
         sp.Init(tip);
 
         yield return PopupWindowTweenIn(sp.gameObject);
     }
-
-    public IEnumerator OpenHintOnlyStringWindow(string title, string Content)//提示視窗，只有文字(固定時間消失)
+    //提示視窗，只有文字(固定時間消失)
+    public IEnumerator OpenHintOnlyStringWindow(string title, string Content)
     {
-        HintPopup sp = OpenPopup(Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "HintWindowPopup"), true)
+        ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "HintWindowPopup");
+
+        yield return new WaitUntil(() => spPrefabs.isDone);
+
+        HintPopup sp = OpenPopup((spPrefabs.asset as GameObject), true)
         .GetComponent<HintPopup>();
 
         Vector2 mySize = sp.GetComponent<RectTransform>().sizeDelta;
@@ -138,9 +153,15 @@ public class PopupManager : InstanceScript<PopupManager>
     //創建單字視窗
     public IEnumerator OpenEstablishWordPopup(Action<WordData, int> _correctButton, int cardSquenceNum, int wordCardNum, Action _filterCallBack = null)
     {
-        CreateWordPopup sp = OpenPopup(Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "CreateWordPopup"), _filterCallBack, false, true)
-        .GetComponent<CreateWordPopup>();
+
+        ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "CreateWordPopup");
+
+        yield return new WaitUntil(() => spPrefabs.isDone);
+
+        CreateWordPopup sp = OpenPopup((spPrefabs.asset as GameObject), _filterCallBack, false, true).GetComponent<CreateWordPopup>();
+
         sp.Init(wordCardNum, cardSquenceNum, _correctButton, ClosePopup);
+
         yield return PopupWindowTweenIn(sp.gameObject);
     }
 
@@ -184,16 +205,40 @@ public class PopupManager : InstanceScript<PopupManager>
         }
 
     }
+    public void DirectOpenLoading()//直接開啟Loading畫面(刪除過場，有些過渡不需要過場)
+    {
+        if (LoadingPopup == null)
+        {
+            LoadingPopup = Instantiate<GameObject>(LoadingPopupPrefab, LoadingLayer.transform);
+        }
+        else
+        {
+            Debug.Log("已開啟讀取畫面");
+        }
+    }
+    public void DirectCloseLoading()//直接關閉Loading畫面(刪除過場，有些過渡不需要過場)
+    {
+        if (LoadingPopup != null)
+        {
+            Destroy(LoadingPopup);
+            LoadingPopup = null;
+        }
+        else
+        {
+            Debug.Log("沒有讀取畫面");
+        }
 
-    public IEnumerator ShowShield()
-    {//展示屏蔽螢幕  小換場用(如:關閉小視窗等)
-        yield return null;
     }
 
-    public IEnumerator CloseShield()
-    {//展示屏蔽螢幕  小換場用(如:關閉小視窗等)
-        yield return null;
-    }
+    // public IEnumerator ShowShield()
+    // {//展示屏蔽螢幕  小換場用(如:關閉小視窗等)
+    //     yield return null;
+    // }
+
+    // public IEnumerator CloseShield()
+    // {//展示屏蔽螢幕  小換場用(如:關閉小視窗等)
+    //     yield return null;
+    // }
 
     //Loading畫面
     //擋住不讓玩家操作透明遮罩
@@ -260,7 +305,7 @@ public class PopupManager : InstanceScript<PopupManager>
         yield return new WaitForSeconds(0.2f);//關閉的時間
         //PopupList.Clear();
     }
-    private IEnumerator PopupWindowTweenIn(GameObject TweenObject, float dur = 0.2f)
+    public IEnumerator PopupWindowTweenIn(GameObject TweenObject, float dur = 0.2f)
     {
 
         TweenObject.transform.localScale = new Vector3(0, 0, 0);

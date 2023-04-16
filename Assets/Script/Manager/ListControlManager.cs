@@ -45,12 +45,19 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
 
     private bool isDeteDragFunc = false;//偵測拖動中的方法是否有執行
 
+    [Header("Default")]
+    private DataManager.WordListDataModle mBaseData;
+
     public IEnumerator Init(BaseData baseData)
     {
         ControlModel = ManagerStatus.Normal;
+
+        mBaseData = (baseData as DataManager.WordListDataModle);
+
+
         mDragManager = GetComponent<DragUI>();
 
-        CreateListOfSaveData();
+        CreateListOfSaveData();//自己拿的資料存檔
         ButtonSetting();
         yield return null;
         // yield return PageTweenIn();
@@ -58,13 +65,10 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
 
     private void ButtonSetting()
     {
-
         ButtonCreateList.onClick.AddListener(ClickNewListButton);
         BelowMenuButton.onClick.AddListener(ClickBelowMenuButton);
         SearchField.onValueChanged.AddListener(SearchOfStr);
         SetDragSettingEvent();
-
-
     }
 
     private void SearchOfStr(string str)//搜尋功能
@@ -151,15 +155,18 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
             // if (obj.GetComponent<ListCard>() == null) return;
             if (obj == null || obj.GetComponent<EventTrigger>() == null) return;
 
-            ListCard temp = CardList[mDragManager.DragGameObject.transform.GetSiblingIndex()];
+            // ListCard temp = CardList[mDragManager.DragGameObject.transform.GetSiblingIndex()];
 
             CardList.RemoveAt(mDragManager.DragGameObject.transform.GetSiblingIndex());
 
-            CardList.Insert(obj.transform.parent.GetSiblingIndex(), temp);
+            CardList.Insert(obj.transform.parent.GetSiblingIndex(), mDragManager.DragGameObject.GetComponent<ListCard>());
 
 
             mDragManager.DragGameObject.transform.SetSiblingIndex(obj.transform.parent.GetSiblingIndex());
             CoverDataSort();
+            mDragManager.DragGameObject.transform.GetComponent<ListCard>().TransferAnimation();
+
+            //觸發listcard的縮小到放大(增加改位置的視覺效果)
 
 
         };//換位置
@@ -167,7 +174,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
     }
 
     private float displayHeigh = 0, canvasRealHeigh = 0;
-    private float DragStandard=300;
+    private float DragStandard = 300;
     private IEnumerator DetectViewAngleDown()//之後要根據拖曳而偵測滑鼠位置是否要把陣列視角向下或向上
     {
 
@@ -193,7 +200,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
                 if (Input.mousePosition.y < DragStandard)
                 {
                     // gViewRect.localPosition=new Vector2(gViewRect.localPosition.x,(gViewRect.localPosition.y+1)*((250-Input.mousePosition.y)/125));
-                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y + 1)+(5*((DragStandard-Input.mousePosition.y)/DragStandard)));
+                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y + 1) + (5 * ((DragStandard - Input.mousePosition.y) / DragStandard)));
                     Debug.Log("向下");
                 }
 
@@ -204,8 +211,8 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
                 if (canvasRealHeigh - Input.mousePosition.y < DragStandard)
                 {
                     // gViewRect.localPosition=new Vector2(gViewRect.localPosition.x,(gViewRect.localPosition.y-1)*((250-(canvasRealHeigh-Input.mousePosition.y))/125));
-                    float yTop=canvasRealHeigh-DragStandard;
-                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y - 1)-(5*(Input.mousePosition.y-yTop)/DragStandard));
+                    float yTop = canvasRealHeigh - DragStandard;
+                    gViewRect.localPosition = new Vector2(gViewRect.localPosition.x, (gViewRect.localPosition.y - 1) - (5 * (Input.mousePosition.y - yTop) / DragStandard));
                     Debug.Log("向上");
                 }
 
@@ -226,10 +233,10 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
     }
 
 
-    private void CreateListOfSaveData()//從savedata新增單字組
+    private void CreateListOfSaveData()//從Init接收到的Data(通常是SaveData裡面)新增單字組
     {
 
-        foreach (WordListData Dic in DataManager.Instance.saveData.myLists)
+        foreach (WordListData Dic in mBaseData.WordListDatas)
         {
             GameObject sp = Instantiate(gListObject);
 
@@ -258,13 +265,14 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
 
         CardList.Add(sp.GetComponent<ListCard>());
 
-        sp.GetComponent<ListCard>().Init(DataManager.Instance.saveData.AddNewList(_title), CreateListCardFunc());
+        // sp.GetComponent<ListCard>().Init(DataManager.Instance.saveData.AddNewList(_title), CreateListCardFunc());
+        sp.GetComponent<ListCard>().Init(DataManager.Instance.saveData.AddNewList(mBaseData, _title), CreateListCardFunc());
     }
 
 
 
 
-    private void CoverDataSort()
+    private void CoverDataSort()//覆蓋儲存檔
     {
         List<WordListData> temp = new List<WordListData>();
 
@@ -272,7 +280,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
         {
             temp.Add(ld.aData);
         }
-        DataManager.Instance.saveData.myLists = temp;
+        DataManager.Instance.saveData.WordListsOfGroup.WordListDatas = temp;
 
     }
 
@@ -380,7 +388,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
         {
 
 
-            DataManager.Instance.saveData.myLists.Remove(dv.aData);
+            DataManager.Instance.saveData.WordListsOfGroup.WordListDatas.Remove(dv.aData);
 
             CardList.Remove(dv);
             Destroy(dv.gameObject);

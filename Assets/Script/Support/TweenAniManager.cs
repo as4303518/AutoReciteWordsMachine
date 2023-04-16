@@ -64,46 +64,53 @@ public class TweenAniManager : MonoBehaviour
     }
 
 
-    public static IEnumerator ColorOrTransparentChange<T>(T _object, Color startColor, Color endColor, Action CallBack = null, float duration = 0.15f) where T : MaskableGraphic
+    public static IEnumerator ColorOrTransparentChange<T>(T _object, Color startColor, Color endColor, Action cb = null, float duration = 0.15f) where T : MaskableGraphic
     {
 
         _object.color = startColor;
         Sequence sq = DOTween.Sequence();
-        sq.Append(_object.DOColor(endColor, duration)).AppendCallback(() => { CallBack(); });
+        sq.Append(_object.DOColor(endColor, duration)).AppendCallback(() => { if(cb!=null) cb(); });
         yield return sq.WaitForCompletion();
 
     }
 
-    public static IEnumerator ColorOrTransparentChange<T>(T _object, Color endColor, Action CallBack = null, float duration = 0.15f) where T : MaskableGraphic
+    public static IEnumerator ColorOrTransparentChange<T>(T _object, Color endColor, Action cb = null, float duration = 0.15f) where T : MaskableGraphic
     {
 
-        yield return ColorOrTransparentChange(_object, _object.color, endColor, CallBack, duration);
+        yield return ColorOrTransparentChange(_object, _object.color, endColor, cb, duration);
         // Tween tween = _object.DOColor(endColor, duration);
         // yield return tween.WaitForCompletion();
     }
 
-    public static IEnumerator ByMoveDoTween(GameObject Obj, Vector3 StartPos, Vector3 EndPos, Action Callback = null, float dur = 0.5f)
+    public static IEnumerator ToMoveDoTween(GameObject Obj, Vector3 EndPos, Action cb = null, float dur = 0.5f)
     {
 
-        Obj.GetComponent<RectTransform>().localPosition = StartPos;
+
         Sequence sq = DOTween.Sequence();
-        sq.Append(Obj.transform.DOLocalMove(StartPos + EndPos, dur)).AppendCallback(() => { Callback(); });
+        sq.Append(Obj.transform.DOLocalMove( EndPos, dur)).AppendCallback(() => { if(cb!=null)cb(); });
 
 
         yield return sq.WaitForCompletion();
 
     }
-    public static IEnumerator ByMoveDoTween(GameObject Obj, Vector3 EndPos, Action Callback = null, float dur = 0.5f)
+
+    public static IEnumerator ByMoveDoTween(GameObject Obj, Vector3 StartPos, Vector3 EndPos, Action cb = null, float dur = 0.5f)
+    {
+
+        Obj.GetComponent<RectTransform>().localPosition = StartPos;
+        Sequence sq = DOTween.Sequence();
+        sq.Append(Obj.transform.DOLocalMove(StartPos + EndPos, dur)).AppendCallback(() => { if(cb!=null)cb(); });
+
+
+        yield return sq.WaitForCompletion();
+
+    }
+    public static IEnumerator ByMoveDoTween(GameObject Obj, Vector3 EndPos, Action cb = null, float dur = 0.25f)
     {
 
 
-        yield return ByMoveDoTween(Obj, Obj.GetComponent<RectTransform>().localPosition, EndPos, Callback, dur);
-        // Sequence sq=DOTween.Sequence();
-        // sq.Append(Obj.transform.DOLocalMove(Obj.GetComponent<RectTransform>().localPosition+EndPos,dur))
-        // .AppendCallback(()=>{Callback();});
+        yield return ByMoveDoTween(Obj, Obj.GetComponent<RectTransform>().localPosition, EndPos, cb, dur);
 
-
-        // yield return sq.WaitForCompletion();
 
     }
 

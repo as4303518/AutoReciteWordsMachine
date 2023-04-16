@@ -49,34 +49,33 @@ public class DataManager : InstanceScript<DataManager>
     }
 
 
+
+
     [Serializable]
-    public class SaveData
+    public class SaveData : BaseData
     {
         [SerializeField] private int ListCount = 0;
         private int LearnWordCount = 0;
 
         public Language MySettingLanguage;
 
-        public List<string> Classification=new List<string>(){"Non"};//標籤種類
+        public List<string> Classification = new List<string>() { "Non" };//標籤種類
 
-        public List<WordListData> myLists = new List<WordListData>();
+        // public List<WordListData> WordListsOfGroup = new List<WordListData>();
+        public WordListDataModle WordListsOfGroup = new WordListDataModle();
 
-        // public List<int> DicKey = new List<int>();
-        // public List<WordListData> DicValue = new List<WordListData>();
+        public WordListDataModle WordListsOfFinishGroup = new WordListDataModle();
 
-        //public List<WordListData> myList = new List<WordListData>();
-        //接著要做顯示，顯示之前儲存的資料,這樣就可以做到刪除與顯示正確
-        public WordListData AddNewList(string _title)
+        public WordListData AddNewList(WordListDataModle Wldm,string _title)
         {
 
-
-            myLists.Add(new WordListData(_title, ListCount));
+            WordListData Wld=Wldm.AddNewList(_title,ListCount);
             ListCount++;
 
-            return myLists[myLists.Count - 1];
+            return Wld;
         }
 
-        
+
 
         public bool CheckListTitleRepeat(string InPutTitle)//檢查單字陣列是否有問題
         {
@@ -87,7 +86,7 @@ public class DataManager : InstanceScript<DataManager>
             }
 
 
-            foreach (var wld in myLists)
+            foreach (var wld in WordListsOfGroup.WordListDatas)
             {
                 if (InPutTitle == wld.mTitle)
                 {
@@ -108,7 +107,7 @@ public class DataManager : InstanceScript<DataManager>
 
             List<string> myWords = new List<string>();
 
-            foreach (WordListData wld in myLists)
+            foreach (WordListData wld in WordListsOfGroup.WordListDatas)
             {
                 wld.mWords.ForEach(v =>
                 {
@@ -129,40 +128,30 @@ public class DataManager : InstanceScript<DataManager>
 
         public void CoverListData(WordListData wld)
         {
-            for(int i=0;i<myLists.Count;i++){
+            for (int i = 0; i < WordListsOfGroup.WordListDatas.Count; i++)
+            {
 
-                if(myLists[i].mListNum==wld.mListNum){
-                    myLists[i]=wld;
+                if (WordListsOfGroup.WordListDatas[i].mListNum == wld.mListNum)
+                {
+                    WordListsOfGroup.WordListDatas[i] = wld;
                 }
 
             }
         }
+    }
+    [Serializable]
+    public class WordListDataModle : BaseData
+    {
+        public List<WordListData> WordListDatas = new List<WordListData>();
+        public WordListData AddNewList(string _title, int ListCount)
+        {
 
-        // public void SetDicDataToList()//將dic的值分開key跟value儲存，這樣才能儲存進json
-        // {
-        //     ClearSaveDataInSaveData();
-        //     DicKey = myLists.Keys.ToList();
-        //     DicValue = myLists.Values.ToList();
-        //     //ClearSaveDataInSaveData();
 
-        // }
-        // public void SetJsonListToDic()
-        // {
-        //     int Count = 0;
-        //     foreach (int i in DicKey)
-        //     {
-        //         myLists.Add(i, DicValue[Count]);
-        //         Count++;
-        //     }
+            WordListDatas.Add(new WordListData(_title, ListCount));
 
-        // }
 
-        // private void ClearSaveDataInSaveData()
-        // {
-        //     DicKey.Clear();
-        //     DicValue.Clear();
-
-        // }
+            return WordListDatas[WordListDatas.Count - 1];
+        }
 
 
     }

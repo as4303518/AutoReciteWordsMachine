@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-firstpass",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp-Editor", "Assembly-CSharp-Editor.csproj", "{4cd6c55b-1ad2-d9ad-53b3-7ad8b2bea16d}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GoogleMobileAds.Editor", "GoogleMobileAds.Editor.csproj", "{0ab86b85-428f-8d26-6873-910932956fae}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,6 +20,8 @@ Global
 		{ae4d8950-3697-9ae0-123f-012cbe444c69}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4cd6c55b-1ad2-d9ad-53b3-7ad8b2bea16d}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4cd6c55b-1ad2-d9ad-53b3-7ad8b2bea16d}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ab86b85-428f-8d26-6873-910932956fae}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ab86b85-428f-8d26-6873-910932956fae}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

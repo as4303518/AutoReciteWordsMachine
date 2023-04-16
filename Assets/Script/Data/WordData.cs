@@ -14,8 +14,8 @@ public class WordData :BaseData
     public string Remark;//註記
 
     public int wordNum { get; private set; }//單字編號
-    private int answerFrequency;//考試次數
-    private int CorrectFrequency;//正確次數
+    public int answerFrequency=0;//考試次數
+    public int CorrectFrequency=0;//正確次數
 
     public string mTag="";//標籤
 
