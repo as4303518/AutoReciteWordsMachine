@@ -33,9 +33,9 @@ public class PopupManager : InstanceScript<PopupManager>
 
         FilterParentCanvas = GameObject.Find("PopupLayer");
 
-        Filter = Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "Filter");
+        Filter = Resources.Load<GameObject>(ResourcesPath.PopupWindowPath + "Common/Filter");
 
-        ResourceRequest resRe = Resources.LoadAsync<GameObject>("Prefabs/Popup/LoadingScreen");
+        ResourceRequest resRe = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "Common/LoadingScreen");
 
         yield return resRe;
 
@@ -98,6 +98,11 @@ public class PopupManager : InstanceScript<PopupManager>
     {
         return OpenPopup(_popup, null, true, false);
     }
+
+    public void PopupManagerExecute(Func<IEnumerator> ie)
+    {
+        StartCoroutine(ie());
+    }
     //兩個按鈕
     public IEnumerator OpenTipTwoOptionsButtonWindow(string _Title, string _Content, Func<IEnumerator> _Correct, Func<int, IEnumerator> _Cancel, Action _filterCallBack = null, bool DefaultCloseFilter = true)
     {
@@ -132,6 +137,7 @@ public class PopupManager : InstanceScript<PopupManager>
     //提示視窗，只有文字(固定時間消失)
     public IEnumerator OpenHintOnlyStringWindow(string title, string Content)
     {
+        Debug.Log("顯示提示字元");
         ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "HintWindowPopup");
 
         yield return new WaitUntil(() => spPrefabs.isDone);
@@ -154,7 +160,7 @@ public class PopupManager : InstanceScript<PopupManager>
     public IEnumerator OpenEstablishWordPopup(Action<WordData, int> _correctButton, int cardSquenceNum, int wordCardNum, Action _filterCallBack = null)
     {
 
-        ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "CreateWordPopup");
+        ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>("Prefabs/Scene/WordScene/WordObject/Popup/CreateWordPopup");
 
         yield return new WaitUntil(() => spPrefabs.isDone);
 
@@ -163,6 +169,30 @@ public class PopupManager : InstanceScript<PopupManager>
         sp.Init(wordCardNum, cardSquenceNum, _correctButton, ClosePopup);
 
         yield return PopupWindowTweenIn(sp.gameObject);
+    }
+
+    public IEnumerator OpenMultOptionsScrollViewPopup(GameObject Prefabs, IEnumerable createList, Action<GameObject, int> recb, Action _confirm = null, Action _cancel = null, Action cb = null)
+    {
+
+        ResourceRequest spPrefabs = Resources.LoadAsync<GameObject>(ResourcesPath.PopupWindowPath + "MultOptionScrollView/MultOptionScrollViewPopup");
+
+        yield return new WaitUntil(() => spPrefabs.isDone);
+
+        MultOptionScrollViewPopup sp = OpenPopup((spPrefabs.asset as GameObject), cb).GetComponent<MultOptionScrollViewPopup>();
+        sp.Init(new MultOptionScrollViewPopup.MultOptionScrollViewPopupFunc()
+        {
+            ConfirmFunc = _confirm,
+            CancelFunc = _cancel,
+            ScrollViewList = Prefabs
+        });
+        int CalcCount = 0;
+        foreach (var v in createList)
+        {
+            Debug.Log("偵錯1===>" + v);
+            recb(sp.CreateButtonOfScrollViewList(), CalcCount);
+            CalcCount++;
+        }
+
     }
 
 
@@ -243,6 +273,11 @@ public class PopupManager : InstanceScript<PopupManager>
     //Loading畫面
     //擋住不讓玩家操作透明遮罩
 
+    public IEnumerator ClosePopup(FilterScript fs)
+    {
+        yield return ClosePopup(fs.FilterNum);
+    }
+
     public IEnumerator ClosePopup(int filterNum)//isremove怕陣列刪除會影響其他在
     {
         //tween out
@@ -298,13 +333,18 @@ public class PopupManager : InstanceScript<PopupManager>
         foreach (FilterScript filter in PopupList.Values)
         {
             StartCoroutine(ClosePopup(filter.FilterNum));
-            // if(filter!=null){
-            // Destroy(filter.gameObject);
-            // }
+
         }
         yield return new WaitForSeconds(0.2f);//關閉的時間
-        //PopupList.Clear();
+
     }
+
+    // public IEnumerator CloseLastPopup(){
+
+
+
+    // }
+
     public IEnumerator PopupWindowTweenIn(GameObject TweenObject, float dur = 0.2f)
     {
 

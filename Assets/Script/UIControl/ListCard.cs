@@ -97,6 +97,13 @@ public class ListCard : MonoBehaviour
     {
         SceneManager.Instance.StartChangScene(SceneManager.SceneType.WordControlManager, aData);
     }
+    private void AlterListName(){//更改群祖名(更改所有單字的)
+
+        foreach(WordData wd in aData.mWords){
+            wd.mListGroup=aData.mTitle;
+        }
+
+    }
 
     public void IsDragButtonEffect(bool isDrag)
     {//當有按鈕被拖曳時期他按鈕的效果

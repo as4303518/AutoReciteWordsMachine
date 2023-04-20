@@ -87,7 +87,7 @@ public class WordCard : MonoBehaviour
 
     }
 
-    private void SetTagChoose()
+    private void SetTagChoose()//設置tag(有哪些tag就設置哪些)
     {
 
         DataManager.Instance.saveData.Classification.ForEach(str =>
@@ -136,7 +136,7 @@ public class WordCard : MonoBehaviour
         }
     }
 
-    public void TransferAnimation()
+    public void TransferAnimation()//調整回原來的狀態範圍
     {
 
         GetComponent<RectTransform>().sizeDelta = new Vector2(800, 0);

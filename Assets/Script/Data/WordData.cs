@@ -19,6 +19,8 @@ public class WordData :BaseData
 
     public string mTag="";//標籤
 
+    public string mListGroup="";
+
     public string mFoundingTime { get; private set; }//創立時間
 
     public WordData(string _context, string _translate,  int _wordNum, string _sentenceContext = "",string _mTag="Non")

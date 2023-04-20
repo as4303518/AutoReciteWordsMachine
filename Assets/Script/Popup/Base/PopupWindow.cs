@@ -4,7 +4,7 @@ using UnityEngine;
 
 public abstract class PopupWindow : MonoBehaviour
 {
-   public FilterScript mParentFilter;
+  [HideInInspector] public FilterScript mParentFilter;
 
 
 

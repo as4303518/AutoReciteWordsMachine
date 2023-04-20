@@ -77,7 +77,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
         yield return null;
     }
 
-    private void UIUpdate()
+    public void UIUpdate()
     {
         Count.text = "總共字量" + aData.mWords.Count;
         ListTitle.text = "標題:" + aData.mTitle;
@@ -100,7 +100,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     private void SearchOfStr(string str)//搜尋功能
     {
         Debug.Log("偵測搜尋==>" + str);
-        str=str.ToUpper();
+        str = str.ToUpper();
         IEnumerable<WordCard> tempList;
 
         switch (SearchModle.value)
@@ -118,7 +118,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
                 break;
             case 2:
 
-                tempList = WordCardList.Where(x => x.mFunc.mNum.ToString()==str);
+                tempList = WordCardList.Where(x => x.mFunc.mNum.ToString() == str);
 
                 break;
 
@@ -209,7 +209,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
             mDragManager.DragGameObject.transform.SetSiblingIndex(obj.transform.parent.GetSiblingIndex());
             SaveWordInfo();
-           getWc.TransferAnimation();
+            getWc.TransferAnimation();
 
 
         };
@@ -344,6 +344,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
             RemoveWordCardToTempList
             ));
 
+        NewCard.aData.mListGroup = aData.mTitle;
         //aData.mWords.Count
         WordCardList.Add(NewCard);
         if (AddListData)
@@ -528,7 +529,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     public void GoToWordListCard()//返回
     {
-        SceneManager.Instance.StartChangScene(SceneManager.SceneType.ListControlManager);
+        SceneManager.Instance.StartChangScene(SceneManager.SceneType.ListControlManager, DataManager.Instance.saveData.WordListsOfGroup);
     }
 
     public IEnumerator PageTweenOut()

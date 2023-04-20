@@ -1439,7 +1439,7 @@ MonoBehaviour:
   wordInfoButton: {fileID: 2903792801833861110}
   DeleteToggle: {fileID: 2903792803124794243}
   mTagDropdowm: {fileID: 2903792801647202816}
-  InfoPopupPrffabs: {fileID: 4444806349483693347, guid: d95b021e72d07c9479afb7174d57fdac, type: 3}
+  InfoPopupPrffabs: {fileID: 8883324764926527986, guid: d95b021e72d07c9479afb7174d57fdac, type: 3}
   mTriggerEventAera: {fileID: 8785113834369675073}
   aData:
     wordText: 

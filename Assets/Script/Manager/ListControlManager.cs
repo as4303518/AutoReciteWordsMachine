@@ -53,7 +53,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
         ControlModel = ManagerStatus.Normal;
 
         mBaseData = (baseData as DataManager.WordListDataModle);
-
+        
 
         mDragManager = GetComponent<DragUI>();
 

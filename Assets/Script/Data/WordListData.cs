@@ -14,7 +14,6 @@ public class WordListData : BaseData
     public string mFoundingTime;//成立時間
     public string mLastOpenTime;//最後登入
 
-
     public int mListNum;//list編號
 
     public int wordCardAllCount = 0;//單字陣列裡的單字的 唯一識別碼
