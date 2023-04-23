@@ -27,7 +27,7 @@ public class WordCard : MonoBehaviour
 
     public GameObject mTriggerEventAera;
 
-    private Vector2 mTriggerEventAeraDefaultSize = new Vector2(800, 500);
+    private Vector2 mTriggerEventAeraDefaultSize = new Vector2(800, 450);
 
     // //單字顯示實體腳本
     // private string wordText;
@@ -79,10 +79,10 @@ public class WordCard : MonoBehaviour
         wordInfoButton.onClick.AddListener(() =>
         {
             Debug.Log("觸發了資訊按鈕");
-             StartCoroutine(ClickInfoButton());
+            StartCoroutine(ClickInfoButton());
         });
 
-        
+
         // DeleteToggle.onValueChanged.AddListener(ChoseDeleteThisCard);
 
     }
@@ -112,9 +112,10 @@ public class WordCard : MonoBehaviour
     {
 
         Debug.Log("點擊了" + aData.wordText + "編號==>" + aData.wordNum);
-        GameObject sp = PopupManager.Instance.OpenPopup(InfoPopupPrffabs);
+        GameObject sp = Instantiate(InfoPopupPrffabs);
         sp.GetComponent<WordInfoPopup>().Init(aData);
-        yield return PopupManager.Instance.PopupWindowTweenIn(sp);
+
+        yield return PopupManager.Instance.OpenPopup(sp);
         //open 
 
 
@@ -128,18 +129,18 @@ public class WordCard : MonoBehaviour
 
         if (isDrag)
         {
-            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(880, 500);
+            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 500);
         }
         else
         {
-            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 450);
+            mTri.GetComponent<RectTransform>().sizeDelta = new Vector2(800, 450);//因為還有一個詳細資訊按鈕,所以這裡的尺寸是800
         }
     }
 
     public void TransferAnimation()//調整回原來的狀態範圍
     {
 
-        GetComponent<RectTransform>().sizeDelta = new Vector2(800, 0);
+        GetComponent<RectTransform>().sizeDelta = new Vector2(880, 0);
         StartCoroutine(ToggleYSizeChange(this.gameObject, 0, 450, 0.3f));
 
     }

@@ -77,6 +77,83 @@ public class DataManager : InstanceScript<DataManager>
 
 
 
+        // public bool CheckListTitleRepeat(string InPutTitle)//檢查單字陣列是否有問題
+        // {
+
+        //     if (InPutTitle == "" || InPutTitle.Length <= 0)//標題一定要有文字
+        //     {
+        //         return true;
+        //     }
+
+
+        //     foreach (var wld in WordListsOfGroup.WordListDatas)
+        //     {
+        //         if (InPutTitle == wld.mTitle)
+        //         {
+        //             Debug.Log("標題重複");
+        //             return true;
+
+        //         }
+        //     }
+        //     return false;
+        // }
+
+        // public bool CheckWordRepeat(string word)//檢查單字有沒有重複
+        // {
+        //     if (word == "" || word.Length <= 0)//標題一定要有文字
+        //     {
+        //         return true;
+        //     }
+
+        //     List<string> myWords = new List<string>();
+
+        //     foreach (WordListData wld in WordListsOfGroup.WordListDatas)
+        //     {
+        //         wld.mWords.ForEach(v =>
+        //         {
+        //             myWords.Add(v.wordText);
+        //         });
+        //     }
+        //     foreach (string w in myWords)
+        //     {
+        //         if (w == word)
+        //         {
+        //             Debug.Log("已有單字重複");
+        //             return true;
+        //         }
+        //     }
+
+        //     return false;
+        // }
+
+        // public void CoverListData(WordListData wld)
+        // {
+        //     for (int i = 0; i < WordListsOfGroup.WordListDatas.Count; i++)
+        //     {
+
+        //         if (WordListsOfGroup.WordListDatas[i].mListNum == wld.mListNum)
+        //         {
+        //             WordListsOfGroup.WordListDatas[i] = wld;
+        //         }
+
+        //     }
+        // }
+    }
+    [Serializable]
+    public class WordListDataModle : BaseData
+    {
+        public List<WordListData> WordListDatas = new List<WordListData>();
+
+        
+        
+        public WordListData AddNewList(string _title, int ListCount)
+        {
+            WordListDatas.Add(new WordListData(_title, ListCount));
+
+
+            return WordListDatas[WordListDatas.Count - 1];
+        }
+
         public bool CheckListTitleRepeat(string InPutTitle)//檢查單字陣列是否有問題
         {
 
@@ -86,7 +163,7 @@ public class DataManager : InstanceScript<DataManager>
             }
 
 
-            foreach (var wld in WordListsOfGroup.WordListDatas)
+            foreach (var wld in WordListDatas)
             {
                 if (InPutTitle == wld.mTitle)
                 {
@@ -107,7 +184,7 @@ public class DataManager : InstanceScript<DataManager>
 
             List<string> myWords = new List<string>();
 
-            foreach (WordListData wld in WordListsOfGroup.WordListDatas)
+            foreach (WordListData wld in WordListDatas)
             {
                 wld.mWords.ForEach(v =>
                 {
@@ -116,7 +193,7 @@ public class DataManager : InstanceScript<DataManager>
             }
             foreach (string w in myWords)
             {
-                if (w == word)
+                if (w.ToUpper() == word.ToUpper())
                 {
                     Debug.Log("已有單字重複");
                     return true;
@@ -128,29 +205,15 @@ public class DataManager : InstanceScript<DataManager>
 
         public void CoverListData(WordListData wld)
         {
-            for (int i = 0; i < WordListsOfGroup.WordListDatas.Count; i++)
+            for (int i = 0; i < WordListDatas.Count; i++)
             {
 
-                if (WordListsOfGroup.WordListDatas[i].mListNum == wld.mListNum)
+                if (WordListDatas[i].mListNum == wld.mListNum)
                 {
-                    WordListsOfGroup.WordListDatas[i] = wld;
+                    WordListDatas[i] = wld;
                 }
 
             }
-        }
-    }
-    [Serializable]
-    public class WordListDataModle : BaseData
-    {
-        public List<WordListData> WordListDatas = new List<WordListData>();
-        public WordListData AddNewList(string _title, int ListCount)
-        {
-
-
-            WordListDatas.Add(new WordListData(_title, ListCount));
-
-
-            return WordListDatas[WordListDatas.Count - 1];
         }
 
 

@@ -13,6 +13,8 @@ public class WordData :BaseData
     public string sentenceContext;
     public string Remark;//註記
 
+    public List<AnswerRecondData> mAnswerListRecond=new List<AnswerRecondData>();//作答紀錄
+
     public int wordNum { get; private set; }//單字編號
     public int answerFrequency=0;//考試次數
     public int CorrectFrequency=0;//正確次數
@@ -53,6 +55,15 @@ public class WordData :BaseData
     {
         Debug.Log("比對了不同");
         return a.wordNum != b.wordNum;
+    }
+
+    public class AnswerRecondData{
+
+        public string Answer;
+        public bool Correct;
+
+
+
     }
 
     // public static bool operator ==(WordCard a, WordCard b) => a.aData.wordNum == b.aData.wordNum;

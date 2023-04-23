@@ -18,21 +18,22 @@ public class CreateWordPopup : PopupWindow
 
     public Button establish;
 
-    private Action<WordData, int> CreateWord;
+    private Action<WordData, int, int> CreateWord;
 
-    private Func<GameObject, IEnumerator> CloseFilter;
+    private Func<GameObject, IEnumerator> ClosePopup;
     private int WordCardNum = 0;
 
     private int CardSquenceNum;
 
 
-    public void Init(int wordCardNum, int cardSquenceNum, Action<WordData, int> createWord, Func<GameObject, IEnumerator> closeFilter)
+    public void Init(int wordCardNum, int cardSquenceNum, Action<WordData, int, int> createWord, Func<GameObject, IEnumerator> closePopup)
     {
         WordCardNum = wordCardNum;
         CreateWord = createWord;
-        CloseFilter = closeFilter;
+        ClosePopup = closePopup;
         CardSquenceNum = cardSquenceNum;
         SetTagChoose();
+
         establish.onClick.AddListener(ClickEstablishWord);
 
     }
@@ -47,19 +48,16 @@ public class CreateWordPopup : PopupWindow
 
     public void ClickEstablishWord()
     {
-
-
-        if (DataManager.Instance.saveData.CheckWordRepeat(inputWord.text))
-        {
-            StartCoroutine(PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!", "不適用或重複的標題的名字"));
-        }
-        else
-        {
-            CreateWord(new WordData(inputWord.text, inputTransTale.text, WordCardNum, inputSentence.text, mTag.options[mTag.value].text), CardSquenceNum);
-            StartCoroutine(CloseFilter(transform.parent.gameObject));
-        }
-
-
+        CreateWord(new WordData(inputWord.text, inputTransTale.text, WordCardNum, inputSentence.text, mTag.options[mTag.value].text), CardSquenceNum, mParentFilter.FilterNum);
+        // if (DataManager.Instance.saveData.WordListsOfGroup.CheckWordRepeat(inputWord.text))
+        // {
+        //     StartCoroutine(PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!", "不適用或重複的標題名字"));
+        // }
+        // else
+        // {
+        //     CreateWord(new WordData(inputWord.text, inputTransTale.text, WordCardNum, inputSentence.text, mTag.options[mTag.value].text), CardSquenceNum,mParentFilter.FilterNum);
+        //     StartCoroutine(ClosePopup(transform.parent.gameObject));
+        // }
     }
 
     //private Action<>

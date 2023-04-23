@@ -131,19 +131,12 @@ public class WordInfoPopup : PopupWindow
 
                         PopupManager.Instance.PopupManagerExecute(Hint);
                         yield return PopupManager.Instance.CloseAllPopup();
-                        
 
 
-                    }
-
-                    IEnumerator Cancel(int filterNum)
-                    {
-
-                        yield return PopupManager.Instance.ClosePopup(filterNum);
 
                     }
 
-                    StartCoroutine(PopupManager.Instance.OpenTipTwoOptionsButtonWindow("變更群組", "確定要變更群組嗎?", Correct, Cancel));
+                    StartCoroutine(PopupManager.Instance.OpenTipTwoOptionsButtonWindow("變更群組", "確定要變更群組嗎?", Correct, PopupManager.Instance.ClosePopup));
                 });
 
 
@@ -155,6 +148,52 @@ public class WordInfoPopup : PopupWindow
 
     private void ClickFinishListButton()
     {
+        // aData
+
+
+
+        IEnumerator Correct()
+        {
+
+            foreach (WordCard v in WordControlManager.Instance.WordCardList)
+            {
+                if (v.aData == aData)
+                {
+                    WordControlManager.Instance.WordCardList.Remove(v);
+                    WordControlManager.Instance.aData.mWords.Remove(aData);
+                    Destroy(v.gameObject);
+                    break;
+                }
+            }
+
+            bool isHaveList = false;
+
+            foreach (WordListData Wld in DataManager.Instance.saveData.WordListsOfFinishGroup.WordListDatas)
+            {
+                if (Wld.mTitle == aData.mListGroup)
+                {
+                    Wld.mWords.Add(aData);
+                    isHaveList = true;
+                    break;
+                }
+
+            }
+            if (!isHaveList)
+            {
+                WordListData wld = new WordListData(WordControlManager.Instance.aData.mTitle, WordControlManager.Instance.aData.mListNum);
+                wld.mWords.Add(aData);
+                DataManager.Instance.saveData.WordListsOfFinishGroup.WordListDatas.Add(wld);
+            }
+            yield return PopupManager.Instance.CloseAllPopup();
+        }
+
+        // IEnumerator Cancel(){
+
+
+        // }
+
+
+        StartCoroutine(PopupManager.Instance.OpenTipTwoOptionsButtonWindow("變更群組", "確定要將單字移動到完成群組嗎?", Correct, PopupManager.Instance.ClosePopup));
 
 
     }

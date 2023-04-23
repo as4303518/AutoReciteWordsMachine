@@ -48,12 +48,14 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
     [Header("Default")]
     private DataManager.WordListDataModle mBaseData;
 
+    private ControlModle mCM;
+
     public IEnumerator Init(BaseData baseData)
     {
         ControlModel = ManagerStatus.Normal;
 
         mBaseData = (baseData as DataManager.WordListDataModle);
-        
+
 
         mDragManager = GetComponent<DragUI>();
 
@@ -252,12 +254,44 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
 
     }
 
+
+    private void DeteHaveNewListCard(string _title, int popupNum = -1)
+    {
+
+ 
+        if (DataManager.Instance.saveData.WordListsOfGroup.CheckListTitleRepeat(_title))
+        {
+            StartCoroutine(PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!", "不適用或重複的標題的名字"));
+            return;
+        }
+        // if (DataManager.Instance.saveData.WordListsOfFinishGroup.CheckListTitleRepeat(_title))
+        // {
+        //     StartCoroutine(PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!", "已在完成陣列存在"));
+        //     return;
+        // }
+
+        CreateListObject(_title);
+
+        if (popupNum >= 0)
+        {
+            StartCoroutine(PopupManager.Instance.ClosePopup(popupNum));
+        }
+        // StartCoroutine()
+
+
+
+
+    }
+
+
+
+
     private void CreateListObject(string _title)//新增單字組
     {
+
         GameObject sp = Instantiate(gListObject);
 
         sp.transform.SetParent(gViewPanel.transform);
-
 
         mDragManager.AddGameObjectEvent(sp);
 
@@ -301,7 +335,7 @@ public class ListControlManager : InstanceScript<ListControlManager>, PrefabScen
         {//如果左側選單是開的，但已經按下功能按鈕，則關閉選單
             ClickBelowMenuButton();
         }
-        StartCoroutine(PopupManager.Instance.OpenInputStringOneCurrectButtonWindow("請輸入群組名稱", CreateListObject));
+        StartCoroutine(PopupManager.Instance.OpenInputStringOneCurrectButtonWindow("請輸入群組名稱", DeteHaveNewListCard));
     }
 
     private bool BelowMenuAni = false;

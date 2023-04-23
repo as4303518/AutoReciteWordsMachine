@@ -13,27 +13,28 @@ public class InputStringWindowPopup : PopupWindow
     public Button mCorrectButton;
 
 
-    public Action<string> ReturnList;
+    public Action<string,int> CorrectFunc;
 
     public Text mTitle;
 
-    public  void Init(string _title)
+    public  void Init(string _title,Action<string,int>correctFunc)
     {
         
         mTitle.text = _title;
+        CorrectFunc=correctFunc;
         
 
     }
 
     public void ClickCorrect()
     {
-        if (DataManager.Instance.saveData.CheckListTitleRepeat(mInputString.text))
+        if (DataManager.Instance.saveData.WordListsOfGroup.CheckListTitleRepeat(mInputString.text))
         {
            StartCoroutine( PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!","不適用或重複的標題的名字"));
         }
         else
         {
-            ReturnList(mInputString.text);
+            CorrectFunc(mInputString.text,mParentFilter.FilterNum);
             // transform.parent.GetComponent<FilterScript>().CloseFilter();
             mParentFilter.CloseFilter();
         }

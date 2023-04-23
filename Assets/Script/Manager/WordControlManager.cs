@@ -25,6 +25,8 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     private DragUI mDragManager;//管理拖曳的組件
 
+    private ControlModle mCM;
+
     [Header("Prefabs")]
     public GameObject WordInfoPopup;
 
@@ -199,7 +201,10 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
             isDeteDragFunc = false;
             SetCradTriggerExpand(isDrag);
 
-            if (obj.GetComponent<EventTrigger>() == null) return;
+            if (obj == null || obj.GetComponent<EventTrigger>() == null)
+            {
+                return;
+            }
 
             WordCard getWc = mDragManager.DragGameObject.GetComponent<WordCard>();
 
@@ -309,26 +314,12 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     }
 
 
-    public void OpenEstablishPopupWindow()//生成單字紀錄單字資訊的彈窗
+    private void CreateNewWord(WordData wd, int CardNum)//生成新的字卡,初始化時使用
     {
-        if (ControlModel == ManagerStatus.Delete)
-        {
-            ClickCancelDeteleButton();
-        }
-        StartCoroutine(PopupManager.Instance.OpenEstablishWordPopup(CreateNewWord, aData.mWords.Count, aData.GetListWordNewNum(), OpenTipTwoOptionsPopup));
+
+        CreateNewWord(wd, CardNum, true);
     }
 
-    private void OpenTipTwoOptionsPopup()
-    {//確定玩家是否真的要放棄建立單字
-     //  PopupManager.Instance.OpenTipTwoOptionsButtonWindow("確定要關閉視窗?", "您確定要放棄當前編輯的單字嗎?",
-
-        StartCoroutine(PopupManager.Instance.OpenTipTwoOptionsButtonWindow(
-        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle),
-        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTag),
-        PopupManager.Instance.CloseAllPopup,
-        PopupManager.Instance.ClosePopup
-        ));
-    }
 
     //AddListData 是否要加到陣列裡,如果是已經在資料上的(原本儲存的)就不需要
     private void CreateNewWord(WordData wd, int CardNum, bool AddListData)//生成新的字卡，加入到aData陣列
@@ -359,26 +350,49 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     }
 
-    private void CreateNewWord(WordData wd, int CardNum)//生成新的字卡,初始化時使用
+    private void DeteHaveNewWordCard(WordData wd, int CardNum, int PopupNum = -1)
     {
 
-        CreateNewWord(wd, CardNum, true);
+ 
+
+        if (DataManager.Instance.saveData.WordListsOfGroup.CheckWordRepeat(wd.wordText))
+        {
+            StartCoroutine(PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!", "不適用或重複的標題的名字"));
+            return;
+        }
+        if (DataManager.Instance.saveData.WordListsOfFinishGroup.CheckWordRepeat(wd.wordText))
+        {
+            StartCoroutine(PopupManager.Instance.OpenHintOnlyStringWindow("創建失敗!", "已在完成陣列存在"));
+            return;
+        }
+
+        CreateNewWord(wd, CardNum);
+        if (PopupNum >= 0)
+        {
+            StartCoroutine(PopupManager.Instance.ClosePopup(PopupNum));
+        }
     }
 
-    // private void SaveWordInfo(WordCard Wc)//更新某筆資料至陣列單字
-    // {
-    //     // aData.mWords.Where(v=>{return true;}).FirstOrDefault();
-    //     for (int i = 0; i < aData.mWords.Count; i++)
-    //     {
-    //         if (aData.mWords[i] == Wc.aData)//==在WordData裡有額外的判斷式
-    //         {
-    //             aData.mWords[i] = Wc.aData;//存list裡的陣列資料
-    //             SaveListDataToDataManager();//存savedata裡的資料
-    //             return;
-    //         }
-    //     }
-    // }
+    public void OpenEstablishPopupWindow()//生成單字紀錄單字資訊的彈窗
+    {
+        if (ControlModel == ManagerStatus.Delete)
+        {
+            ClickCancelDeteleButton();
+        }
+        StartCoroutine(PopupManager.Instance.OpenEstablishWordPopup(DeteHaveNewWordCard, aData.mWords.Count, aData.GetListWordNewNum(), OpenTipTwoOptionsPopup));
+    }
 
+    private void OpenTipTwoOptionsPopup()
+    {//確定玩家是否真的要放棄建立單字
+     //  PopupManager.Instance.OpenTipTwoOptionsButtonWindow("確定要關閉視窗?", "您確定要放棄當前編輯的單字嗎?",
+
+        StartCoroutine(PopupManager.Instance.OpenTipTwoOptionsButtonWindow(
+        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTitle),
+        LanguageTranstale.Instance.GetStr(MyLabel.SureCloseWindowTag),
+        PopupManager.Instance.CloseAllPopup,
+        PopupManager.Instance.ClosePopup
+        ));
+    }
     private void SaveWordInfo()//更新某筆資料至陣列單字
     {
         Debug.Log("word儲存");
@@ -399,7 +413,7 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
     private void SaveListDataToDataManager()//更新資料至主Data上
     {
         Debug.Log("更新陣列的狀態");
-        DataManager.Instance.saveData.CoverListData(aData);
+        DataManager.Instance.saveData.WordListsOfGroup.CoverListData(aData);
     }
 
     private void DeleteDataOfTempList()//刪除資料
@@ -560,5 +574,27 @@ public class WordControlManager : InstanceScript<WordControlManager>, PrefabScen
 
     }
 
+    // public class CreateNewWordCardFunc
+    // {
+
+    //     public string inputWord;
+    //     public string inputTransTale;
+    //     public string inputSentence;
+    //     public string mTag;
+    //     public int WordCardNum;
+    //     public int CardSquenceNum;
+
+
+    // }
+
+
+}
+
+
+public enum ControlModle
+{//偵測是在哪個清單上
+
+    Normal,
+    Finish,
 
 }

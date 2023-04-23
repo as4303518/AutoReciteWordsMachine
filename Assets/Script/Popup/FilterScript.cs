@@ -9,12 +9,15 @@ public class FilterScript : MonoBehaviour
 {
     public int FilterNum;
 
+    public GameObject MainChildWindow=null;
+
     public List<int> DependWindow = new List<int>();//母彈窗的子視窗們，方便一起關閉，也不會關到其他視窗
     private Func<int, IEnumerator> CloseWindow;
     // private  object CloseWindow;
 
-    public void Init(int _filterNum, Func<int, IEnumerator> _closeWindow, bool CloseOfFilter = true)
+    public void Init(GameObject mainChildWindow,int _filterNum, Func<int, IEnumerator> _closeWindow, bool CloseOfFilter = true)
     {
+        MainChildWindow=mainChildWindow;
         FilterNum = _filterNum;
         CloseWindow += _closeWindow;
 
